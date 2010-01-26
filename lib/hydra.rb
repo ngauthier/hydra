@@ -1,0 +1,1 @@
+require 'hydra/pipe'
