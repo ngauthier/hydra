@@ -11,7 +11,7 @@ begin
     gem.homepage = "http://github.com/ngauthier/hydra"
     gem.authors = ["Nick Gauthier"]
     gem.add_development_dependency "shoulda", "= 2.10.3"
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+    gem.add_dependency "net-ssh", "= 2.0.19"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
@@ -34,7 +34,7 @@ begin
   end
 rescue LoadError
   task :rcov do
-    abort "RCov is not available. In order to run rcov, you must: sudo gem install spicycode-rcov"
+    abort "RCov is not available. In order to run rcov, you must: gem install rcov"
   end
 end
 

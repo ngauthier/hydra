@@ -16,8 +16,13 @@ module Hydra #:nodoc:
   #
   # A pipe is actually two pipes:
   #
-  # Parent === Pipe 1 ==> Child
-  # Parent <== Pipe 2 === Child
+  #  Parent  == Pipe 1 ==> Child
+  #  Parent <== Pipe 2 ==  Child
+  #
+  # It's like if you had two cardboard tubes and you were using
+  # them to drop balls with messages in them between processes.
+  # One tube is for sending from parent to child, and the other
+  # tube is for sending from child to parent.
   class Pipe
     # Creates a new uninitialized pipe pair.
     def initialize
@@ -41,15 +46,6 @@ module Hydra #:nodoc:
       rescue Errno::EPIPE
         raise Hydra::PipeError::Broken
       end
-    end
-
-    # Returns true if there is nothing to read (right now). However it is
-    # not exactly eof, if the other side writes, this will return false.
-    #
-    # It's a good way to tell if there is anything to process right now,
-    # otherwise, you can sleep.
-    def eof?
-      @reader.eof?
     end
 
     # Identify this side of the pipe as the child.

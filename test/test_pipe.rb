@@ -1,6 +1,6 @@
-require 'helper'
+require File.join(File.dirname(__FILE__), 'helper')
 
-class TestPipeDream < Test::Unit::TestCase
+class TestPipe < Test::Unit::TestCase
   context "a pipe" do
     setup do
       @pipe = Hydra::Pipe.new
@@ -16,9 +16,7 @@ class TestPipeDream < Test::Unit::TestCase
       @pipe.identify_as_parent
       @pipe.write "Test Message\n"
       assert_equal "Message Received\n", @pipe.gets
-      assert !@pipe.eof?
       assert_equal "Second Message\n", @pipe.gets
-      assert @pipe.eof?
       assert_raise Hydra::PipeError::Broken do
         @pipe.write "anybody home?"
       end
