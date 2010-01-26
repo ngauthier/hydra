@@ -34,12 +34,15 @@ module Hydra #:nodoc:
     # Read a line from a pipe. It will have a trailing newline.
     def gets
       force_identification
-      @reader.gets
+      @reader.gets.chomp
     end
 
     # Write a line to a pipe. It must have a trailing newline.
     def write(str)
       force_identification
+      unless str =~ /\n$/
+        str += "\n"
+      end
       begin
         @writer.write(str)
         return str
