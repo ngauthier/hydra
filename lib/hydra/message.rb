@@ -19,8 +19,8 @@ module Hydra #:nodoc:
     # are attributes of the message and the values are
     # set to the attribute.
     def initialize(opts = {})
-      opts.each do |k,v|
-        self.send("#{k}=",v)
+      opts.each do |variable,value|
+        self.send("#{variable}=",value)
       end
     end
 
@@ -35,8 +35,7 @@ module Hydra #:nodoc:
     # This is really just a string representation of a hash
     # with no newlines. It adds in the class automatically
     def serialize(opts = {})
-      opts[:class] = self.class
-      opts.inspect
+      opts.merge({:class => self.class}).inspect
     end
   end
 end
