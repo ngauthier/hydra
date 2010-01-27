@@ -1,10 +1,6 @@
 #!/usr/bin/env ruby
-# read lines from stdin
-# echo each line back
-# on EOF, quit nicely
-
+# Echoes back to the sender
 $stdout.sync = true
-
 while line = $stdin.gets
   $stdout.write(line)
 end
