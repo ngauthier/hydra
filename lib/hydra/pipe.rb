@@ -28,7 +28,6 @@ module Hydra #:nodoc:
     def initialize
       @child_read, @parent_write = IO.pipe
       @parent_read, @child_write = IO.pipe
-      [@parent_write, @child_write].each{|io| io.sync = true}
     end
 
     # Read a line from a pipe. It will have a trailing newline.
