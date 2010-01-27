@@ -11,8 +11,7 @@ class TestRunner < Test::Unit::TestCase
       @pipe.identify_as_parent
     end
     should "request a file on boot" do
-      @message = Hydra::Message.build(@pipe.gets)
-      assert @message.is_a?(Hydra::Messages::RunnerRequestsFile)
+      assert @pipe.gets.is_a?(Hydra::Messages::RunnerRequestsFile)
     end
     should "return a result message after processing a file" do
       

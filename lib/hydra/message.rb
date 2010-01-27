@@ -1,5 +1,10 @@
 module Hydra #:nodoc:
   class Message #:nodoc:
+    def initialize(opts = {})
+      opts.each do |k,v|
+        self.send(k,v)
+      end
+    end
     def self.build(hash)
       hash.delete(:class).new(hash)
     end
