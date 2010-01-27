@@ -19,6 +19,11 @@ module Hydra #:nodoc:
       end
     end
 
+    def close
+      @reader.close if @reader
+      @writer.close if @writer
+    end
+
     class UnprocessableMessage < RuntimeError
       attr_accessor :message
       def initialize(message = "Message expected")

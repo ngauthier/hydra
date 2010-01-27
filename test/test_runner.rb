@@ -4,11 +4,14 @@ class TestRunner < Test::Unit::TestCase
   context "a test runner" do
     setup do
       @pipe = Hydra::Pipe.new
-      Process.fork do
+      @child = Process.fork do
         @pipe.identify_as_child
         Hydra::Runner.new(@pipe)
       end
       @pipe.identify_as_parent
+    end
+    teardown do
+      Process.wait(@child)
     end
     should "request a file on boot" do
       assert @pipe.gets.is_a?(Hydra::Messages::RunnerRequestsFile)

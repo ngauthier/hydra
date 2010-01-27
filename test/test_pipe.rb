@@ -5,6 +5,9 @@ class TestPipe < Test::Unit::TestCase
     setup do
       @pipe = Hydra::Pipe.new
     end
+    teardown do
+      @pipe.close
+    end
     should "be able to write messages" do
       child = Process.fork do
         @pipe.identify_as_child
@@ -16,6 +19,7 @@ class TestPipe < Test::Unit::TestCase
       @pipe.write Hydra::Messages::TestMessage.new(:text => "Test Message")
       assert_equal "Message Received", @pipe.gets.text
       assert_equal "Second Message", @pipe.gets.text
+      Process.wait(child) #ensure it quits, so there is nothing to write to
       assert_raise IOError do
         @pipe.write Hydra::Messages::TestMessage.new(:text => "anyone there?")
       end

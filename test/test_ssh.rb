@@ -10,6 +10,9 @@ class TestSSH < Test::Unit::TestCase
       )
       @message = Hydra::Messages::TestMessage.new
     end
+    teardown do
+      @ssh.close
+    end
     should "be able to execute a command" do
       @ssh.write @message 
       assert_equal @message.text, @ssh.gets.text
