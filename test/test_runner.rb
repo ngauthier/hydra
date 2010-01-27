@@ -14,7 +14,9 @@ class TestRunner < Test::Unit::TestCase
       @message = Hydra::Message.build(@pipe.gets)
       assert @message.is_a?(Hydra::Messages::RunnerRequestsFile)
     end
-    should "return a result message after processing a file"
+    should "return a result message after processing a file" do
+      
+    end
     should "terminate when sent a shutdown message"
   end
 end

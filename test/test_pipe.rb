@@ -6,39 +6,29 @@ class TestPipe < Test::Unit::TestCase
       @pipe = Hydra::Pipe.new
     end
     should "be able to write messages" do
-      Process.fork do
+      child = Process.fork do
         @pipe.identify_as_child
-        assert_equal "Test Message", @pipe.gets
-        @pipe.write "Message Received"
-        @pipe.write "Second Message"
-        @pipe.close
+        assert_equal "Test Message", @pipe.gets.text
+        @pipe.write Hydra::Messages::TestMessage.new(:text => "Message Received")
+        @pipe.write Hydra::Messages::TestMessage.new(:text => "Second Message")
       end
       @pipe.identify_as_parent
-      @pipe.write "Test Message"
-      assert_equal "Message Received", @pipe.gets
-      assert_equal "Second Message", @pipe.gets
-      assert_raise Hydra::PipeError::Broken do
-        @pipe.write "anybody home?"
+      @pipe.write Hydra::Messages::TestMessage.new(:text => "Test Message")
+      assert_equal "Message Received", @pipe.gets.text
+      assert_equal "Second Message", @pipe.gets.text
+      assert_raise IOError do
+        @pipe.write Hydra::Messages::TestMessage.new(:text => "anyone there?")
       end
-      @pipe.close
     end
     should "not allow writing if unidentified" do
-      assert_raise Hydra::PipeError::Unidentified do
-        @pipe.write "hey\n"
+      assert_raise IOError do
+        @pipe.write Hydra::Messages::TestMessage.new(:text => "Test Message")
       end
     end
     should "not allow reading if unidentified" do
-      assert_raise Hydra::PipeError::Unidentified do
+      assert_raise IOError do
         @pipe.gets
       end
-    end
-    should "handle newlines" do
-      Process.fork do
-        @pipe.identify_as_child
-        @pipe.write "Message\n"
-      end
-      @pipe.identify_as_parent
-      assert_equal "Message", @pipe.gets
     end
   end
 end

@@ -1,4 +1,5 @@
 require 'open3'
+require 'hydra/io'
 module Hydra #:nodoc:
   # Read and write with an ssh connection. For example:
   #  @ssh = Hydra::SSH.new('nick@nite')
@@ -17,6 +18,7 @@ module Hydra #:nodoc:
   #    => "8"           # the output from irb
   class SSH
     include Open3
+    include Hydra::MessagingIO
 
     # Initialize new SSH connection. The single parameters is passed
     # directly to ssh for starting a connection. So you can do:
@@ -25,24 +27,7 @@ module Hydra #:nodoc:
     #  Hydra::SSH.new('-p 3022 user@server.com')
     # etc..
     def initialize(connection_options)
-      @stdin, @stdout, @stderr = popen3("ssh #{connection_options}")
-    end
-
-    # Write a string to ssh. This method returns the string passed to
-    # ssh. Note that if you do not add a newline at the end, it adds
-    # one for you, and the modified string is returned
-    def write(str)
-      unless str =~ /\n$/
-        str += "\n"
-      end
-      @stdin.write(str)
-      return str
-    end
-
-    # Read a line from ssh. This call blocks when there is nothing
-    # to read.
-    def gets
-      @stdout.gets.chomp
+      @writer, @reader, @error = popen3("ssh #{connection_options}")
     end
   end
 end
