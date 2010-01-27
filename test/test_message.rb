@@ -17,8 +17,8 @@ class TestMessage < Test::Unit::TestCase
     end
     should "serialize" do
       assert_equal(
-        "{:class=>TestMessage::MyMessage, :my_var=>\"my value\"}",
-        @m.serialize
+        {:class=>TestMessage::MyMessage, :my_var=>"my value"},
+        eval(@m.serialize)
       )
     end
     should "build from serialization" do

@@ -40,5 +40,5 @@ module Hydra #:nodoc:
   end
 end
 
-require 'hydra/message/runner_requests_file'
+require 'hydra/message/runner_messages'
 
