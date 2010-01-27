@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{hydra}
-  s.version = "0.2.0"
+  s.version = "0.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
@@ -29,12 +29,15 @@ Gem::Specification.new do |s|
      "lib/hydra.rb",
      "lib/hydra/io.rb",
      "lib/hydra/message.rb",
-     "lib/hydra/message/runner_requests_file.rb",
+     "lib/hydra/message/runner_messages.rb",
      "lib/hydra/pipe.rb",
      "lib/hydra/runner.rb",
      "lib/hydra/ssh.rb",
      "test/echo_the_dolphin.rb",
      "test/helper.rb",
+     "test/sample_tests/assert_true.rb",
+     "test/sample_tests/write_file.rb",
+     "test/test_message.rb",
      "test/test_pipe.rb",
      "test/test_runner.rb",
      "test/test_ssh.rb"
@@ -50,6 +53,8 @@ Gem::Specification.new do |s|
      "test/test_message.rb",
      "test/test_pipe.rb",
      "test/test_runner.rb",
+     "test/sample_tests/write_file.rb",
+     "test/sample_tests/assert_true.rb",
      "test/echo_the_dolphin.rb"
   ]
 
