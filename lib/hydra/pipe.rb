@@ -2,15 +2,19 @@ require 'hydra/io'
 module Hydra #:nodoc:
   # Read and write between two processes via pipes. For example:
   #   @pipe = Hydra::Pipe.new
-  #   Process.fork do
+  #   @child = Process.fork do
   #     @pipe.identify_as_child
-  #     sleep(1)
-  #     puts "A message from my parent:\n#{@pipe.gets}"
+  #     puts "A message from my parent:\n#{@pipe.gets.text}"
   #     @pipe.close
   #   end
   #   @pipe.identify_as_parent
-  #   @pipe.write "Hello, Child!"
+  #   @pipe.write Hydra::Messages::TestMessage.new(:text => "Hello!")
   #   @pipe.close
+  #
+  # Note that the TestMessage class is only available in tests, and
+  # not in Hydra by default.
+  #
+  #
   # When the process forks, the pipe is copied. When a pipe is
   # identified as a parent or child, it is choosing which ends
   # of the pipe to use.

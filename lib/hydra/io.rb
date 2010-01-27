@@ -1,6 +1,12 @@
 module Hydra #:nodoc:
+  # Module that implemets methods that auto-serialize and deserialize messaging
+  # objects.
   module MessagingIO
-    # Read a line from the input IO object.
+    # Read a Message from the input IO object. Automatically build
+    # a message from the response and return it.
+    #
+    #  IO.gets
+    #    => Hydra::Message # or subclass
     def gets
       raise IOError unless @reader
       message = @reader.gets
@@ -8,7 +14,9 @@ module Hydra #:nodoc:
       return Message.build(eval(message.chomp))
     end
 
-    # Write a line to the output IO object
+    # Write a Message to the output IO object. It will automatically
+    # serialize a Message object.
+    #  IO.write Hydra::Message.new
     def write(message)
       raise IOError unless @writer
       raise UnprocessableMessage unless message.is_a?(Hydra::Message)
@@ -19,13 +27,18 @@ module Hydra #:nodoc:
       end
     end
 
+    # Closes the IO object.
     def close
       @reader.close if @reader
       @writer.close if @writer
     end
 
+    # IO will return this error if it cannot process a message.
+    # For example, if you tried to write a string, it would fail,
+    # because the string is not a message.
     class UnprocessableMessage < RuntimeError
       attr_accessor :message
+      # Allow a custom message for the exception.
       def initialize(message = "Message expected")
         @message = message    
       end

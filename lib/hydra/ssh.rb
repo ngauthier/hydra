@@ -2,20 +2,17 @@ require 'open3'
 require 'hydra/io'
 module Hydra #:nodoc:
   # Read and write with an ssh connection. For example:
-  #  @ssh = Hydra::SSH.new('nick@nite')
-  #  @ssh.write("echo hi")
-  #  puts @ssh.gets
-  #    => hi
+  #   @ssh = Hydra::SSH.new(
+  #     'localhost', # connect to this machine
+  #     '/home/user', # move to the home directory
+  #     "ruby hydra/test/echo_the_dolphin.rb" # run the echo script
+  #   )
+  #   @message = Hydra::Messages::TestMessage.new("Hey there!")
+  #   @ssh.write @message
+  #   puts @ssh.gets.text
+  #     => "Hey there!"
   #
-  # You can also use this to launch an interactive process. For
-  # example:
-  #  @ssh = Hydra::SSH.new('nick@nite')
-  #  @ssh.write('irb')
-  #  @ssh.write("5+3")
-  #  @ssh.gets
-  #    => "5+3\n"       # because irb echoes commands
-  #  @ssh.gets
-  #    => "8"           # the output from irb
+  # Note that what ever process you run should respond with Hydra messages.
   class SSH
     include Open3
     include Hydra::MessagingIO

@@ -5,16 +5,17 @@
 
 Gem::Specification.new do |s|
   s.name = %q{hydra}
-  s.version = "0.1.1"
+  s.version = "0.2.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
-  s.date = %q{2010-01-26}
+  s.date = %q{2010-01-27}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
   s.extra_rdoc_files = [
     "LICENSE",
-     "README.rdoc"
+     "README.rdoc",
+     "TODO"
   ]
   s.files = [
     ".document",
@@ -22,14 +23,20 @@ Gem::Specification.new do |s|
      "LICENSE",
      "README.rdoc",
      "Rakefile",
+     "TODO",
      "VERSION",
      "hydra.gemspec",
      "lib/hydra.rb",
+     "lib/hydra/io.rb",
+     "lib/hydra/message.rb",
+     "lib/hydra/message/runner_requests_file.rb",
      "lib/hydra/pipe.rb",
+     "lib/hydra/runner.rb",
      "lib/hydra/ssh.rb",
      "test/echo_the_dolphin.rb",
      "test/helper.rb",
      "test/test_pipe.rb",
+     "test/test_runner.rb",
      "test/test_ssh.rb"
   ]
   s.homepage = %q{http://github.com/ngauthier/hydra}
@@ -40,7 +47,9 @@ Gem::Specification.new do |s|
   s.test_files = [
     "test/test_ssh.rb",
      "test/helper.rb",
+     "test/test_message.rb",
      "test/test_pipe.rb",
+     "test/test_runner.rb",
      "test/echo_the_dolphin.rb"
   ]
 
