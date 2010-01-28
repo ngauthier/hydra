@@ -19,6 +19,7 @@ module Hydra #:nodoc:
     # are attributes of the message and the values are
     # set to the attribute.
     def initialize(opts = {})
+      opts.delete :class
       opts.each do |variable,value|
         self.send("#{variable}=",value)
       end
@@ -41,4 +42,5 @@ module Hydra #:nodoc:
 end
 
 require 'hydra/message/runner_messages'
+require 'hydra/message/worker_messages'
 
