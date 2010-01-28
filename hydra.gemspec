@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{hydra}
-  s.version = "0.3.0"
+  s.version = "0.4.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
-  s.date = %q{2010-01-27}
+  s.date = %q{2010-01-28}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
   s.extra_rdoc_files = [
@@ -27,20 +27,23 @@ Gem::Specification.new do |s|
      "VERSION",
      "hydra.gemspec",
      "lib/hydra.rb",
-     "lib/hydra/io.rb",
      "lib/hydra/message.rb",
      "lib/hydra/message/runner_messages.rb",
+     "lib/hydra/message/worker_messages.rb",
+     "lib/hydra/messaging_io.rb",
      "lib/hydra/pipe.rb",
      "lib/hydra/runner.rb",
      "lib/hydra/ssh.rb",
-     "test/echo_the_dolphin.rb",
-     "test/helper.rb",
-     "test/sample_tests/assert_true.rb",
-     "test/sample_tests/write_file.rb",
-     "test/test_message.rb",
-     "test/test_pipe.rb",
-     "test/test_runner.rb",
-     "test/test_ssh.rb"
+     "lib/hydra/worker.rb",
+     "test/fixtures/assert_true.rb",
+     "test/fixtures/echo_the_dolphin.rb",
+     "test/fixtures/write_file.rb",
+     "test/message_test.rb",
+     "test/pipe_test.rb",
+     "test/runner_test.rb",
+     "test/ssh_test.rb",
+     "test/test_helper.rb",
+     "test/worker_test.rb"
   ]
   s.homepage = %q{http://github.com/ngauthier/hydra}
   s.rdoc_options = ["--charset=UTF-8"]
@@ -48,14 +51,15 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{Distributed testing toolkit}
   s.test_files = [
-    "test/test_ssh.rb",
-     "test/helper.rb",
-     "test/test_message.rb",
-     "test/test_pipe.rb",
-     "test/test_runner.rb",
-     "test/sample_tests/write_file.rb",
-     "test/sample_tests/assert_true.rb",
-     "test/echo_the_dolphin.rb"
+    "test/message_test.rb",
+     "test/test_helper.rb",
+     "test/ssh_test.rb",
+     "test/fixtures/write_file.rb",
+     "test/fixtures/assert_true.rb",
+     "test/fixtures/echo_the_dolphin.rb",
+     "test/worker_test.rb",
+     "test/runner_test.rb",
+     "test/pipe_test.rb"
   ]
 
   if s.respond_to? :specification_version then
