@@ -18,23 +18,23 @@ class RunnerTest < Test::Unit::TestCase
       # flip it around to the parent is in the fork, this gives
       # us more direct control over the runner and proper test
       # coverage output
-      @pipe = Hydra::Pipe.new
-      @parent = Process.fork do
-        request_a_file_and_verify_completion(@pipe)
+      pipe = Hydra::Pipe.new
+      parent = Process.fork do
+        request_a_file_and_verify_completion(pipe)
       end
-      run_the_runner(@pipe)
-      Process.wait(@parent)
+      run_the_runner(pipe)
+      Process.wait(parent)
     end
 
     # this flips the above test, so that the main process runs a bit of the parent
     # code, but only with minimal assertion
     should "be able to tell a runner to run a test" do
-      @pipe = Hydra::Pipe.new
-      @child = Process.fork do
-        run_the_runner(@pipe)
+      pipe = Hydra::Pipe.new
+      child = Process.fork do
+        run_the_runner(pipe)
       end
-      request_a_file_and_verify_completion(@pipe)
-      Process.wait(@child)
+      request_a_file_and_verify_completion(pipe)
+      Process.wait(child)
     end
   end
 

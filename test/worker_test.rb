@@ -13,30 +13,53 @@ class WorkerTest < Test::Unit::TestCase
       FileUtils.rm_f(TARGET)
     end
 
+    # run the worker in the foreground and the requests in the background
     should "run a test" do
       num_runners = 4
-      @pipe = Hydra::Pipe.new
-      @child = Process.fork do
-        @pipe.identify_as_child
-        Hydra::Worker.new(@pipe, num_runners)
-        @pipe.close
+      pipe = Hydra::Pipe.new
+      child = Process.fork do
+        request_a_file_and_verify_completion(pipe, num_runners)
+        pipe.close
       end
-      @pipe.identify_as_parent
-      num_runners.times do
-        assert @pipe.gets.is_a?(Hydra::Messages::Worker::RequestFile)
-      end
-      @pipe.write(Hydra::Messages::Worker::RunFile.new(:file => TESTFILE))
+      run_the_worker(pipe, num_runners)
+      Process.wait(child)
+    end
 
-      response = @pipe.gets
+    # inverse of the above test to run the worker in the background
+    should "be able to tell a worker to run a test" do
+      num_runners = 4
+      pipe = Hydra::Pipe.new
+      child = Process.fork do
+        run_the_worker(pipe, num_runners)
+      end
+      request_a_file_and_verify_completion(pipe, num_runners)
+      Process.wait(child)
+      pipe.close
+    end
+  end
+
+  module WorkerTestHelper
+    def run_the_worker(pipe, num_runners)
+      pipe.identify_as_child
+      Hydra::Worker.new(pipe, num_runners)
+      pipe.close
+    end
+
+    def request_a_file_and_verify_completion(pipe, num_runners)
+      pipe.identify_as_parent
+      num_runners.times do
+        assert pipe.gets.is_a?(Hydra::Messages::Worker::RequestFile)
+      end
+      pipe.write(Hydra::Messages::Worker::RunFile.new(:file => TESTFILE))
+
+      response = pipe.gets
       assert response.is_a?(Hydra::Messages::Worker::Results)
 
-      @pipe.write(Hydra::Messages::Worker::Shutdown.new)
+      pipe.write(Hydra::Messages::Worker::Shutdown.new)
 
       assert File.exists?(TARGET)
       assert_equal "HYDRA", File.read(TARGET)
-
-      Process.wait(@child)
-      @pipe.close
     end
   end
+  include WorkerTestHelper
 end
