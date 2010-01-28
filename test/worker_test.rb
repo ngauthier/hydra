@@ -14,14 +14,17 @@ class WorkerTest < Test::Unit::TestCase
     end
 
     should "run a test" do
+      num_runners = 4
       @pipe = Hydra::Pipe.new
       @child = Process.fork do
         @pipe.identify_as_child
-        Hydra::Worker.new(@pipe, 1)
+        Hydra::Worker.new(@pipe, num_runners)
         @pipe.close
       end
       @pipe.identify_as_parent
-      assert @pipe.gets.is_a?(Hydra::Messages::Worker::RequestFile)
+      num_runners.times do
+        assert @pipe.gets.is_a?(Hydra::Messages::Worker::RequestFile)
+      end
       @pipe.write(Hydra::Messages::Worker::RunFile.new(:file => TESTFILE))
 
       response = @pipe.gets
@@ -32,8 +35,8 @@ class WorkerTest < Test::Unit::TestCase
       assert File.exists?(TARGET)
       assert_equal "HYDRA", File.read(TARGET)
 
-      @pipe.close
       Process.wait(@child)
+      @pipe.close
     end
   end
 end

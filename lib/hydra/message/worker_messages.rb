@@ -1,4 +1,4 @@
-module Hydra #:nodoc:
+module Hydra #:nodoc: 
   module Messages #:nodoc:
     module Worker #:nodoc:
       # Message indicating that a work needs a file to delegate to a runner
@@ -16,6 +16,7 @@ module Hydra #:nodoc:
       class Results < Hydra::Messages::Runner::Results
       end
 
+      # Message telling the worker to shut down.
       class Shutdown < Hydra::Messages::Runner::Shutdown
         def handle(worker)
           worker.shutdown

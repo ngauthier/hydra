@@ -27,7 +27,7 @@ module Hydra #:nodoc:
           super(:output => @output, :file => @file)
         end
         def handle(worker, runner) #:nodoc:
-          worker.relay_results(self)
+          worker.relay_results(self, runner)
         end
       end
 
