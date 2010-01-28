@@ -17,7 +17,7 @@ class TestRunner < Test::Unit::TestCase
     should "boot and run a file and shut down" do
       assert @pipe.gets.is_a?(Hydra::Messages::Runner::RequestFile)
 
-      file = File.join(File.dirname(__FILE__), 'sample_tests', 'assert_true.rb')
+      file = File.join(File.dirname(__FILE__), 'fixtures', 'assert_true.rb')
       @pipe.write(Hydra::Messages::Runner::RunFile.new(:file => file))
       response = @pipe.gets
       assert response.is_a?(Hydra::Messages::Runner::Results)
@@ -30,7 +30,7 @@ class TestRunner < Test::Unit::TestCase
       target = File.join(Dir.tmpdir, 'hydra_test.txt')
       FileUtils.rm_f(target)
       assert !File.exists?(target)
-      file = File.join(File.dirname(__FILE__), 'sample_tests', 'write_file.rb')
+      file = File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb')
       assert @pipe.gets.is_a?(Hydra::Messages::Runner::RequestFile)
       @pipe.write(Hydra::Messages::Runner::RunFile.new(:file => file))
       response = @pipe.gets

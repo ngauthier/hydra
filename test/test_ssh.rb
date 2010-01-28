@@ -6,7 +6,7 @@ class TestSSH < Test::Unit::TestCase
       @ssh = Hydra::SSH.new(
         'localhost', # connect to this machine
         File.expand_path(File.join(File.dirname(__FILE__))), # move to the test directory
-        "ruby ./echo_the_dolphin.rb"
+        "ruby fixtures/echo_the_dolphin.rb"
       )
       @message = Hydra::Messages::TestMessage.new
     end
