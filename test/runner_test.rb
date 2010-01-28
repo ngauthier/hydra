@@ -1,42 +1,70 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-class RunnerTest < Test::Unit::TestCase
-  context "a test runner" do
-    setup do
-      @pipe = Hydra::Pipe.new
-      @child = Process.fork do
-        @pipe.identify_as_child
-        Hydra::Runner.new(@pipe)
-      end
-      @pipe.identify_as_parent
-    end
-    teardown do
-      @pipe.close
-      Process.wait(@child)
-    end
-    should "boot and run a file and shut down" do
-      assert @pipe.gets.is_a?(Hydra::Messages::Runner::RequestFile)
+TARGET = File.join(Dir.tmpdir, 'hydra_test.txt')
+TESTFILE = File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb')
 
-      file = File.join(File.dirname(__FILE__), 'fixtures', 'assert_true.rb')
-      @pipe.write(Hydra::Messages::Runner::RunFile.new(:file => file))
-      response = @pipe.gets
-      assert response.is_a?(Hydra::Messages::Runner::Results)
-      assert response.output =~ /Finished/
-      assert_equal file, response.file
-      @pipe.write(Hydra::Messages::Runner::Shutdown.new)
+class RunnerTest < Test::Unit::TestCase
+  context "with a file to test and a destination to verify" do
+    setup do
+      FileUtils.rm_f(TARGET)
     end
+
+    teardown do
+      FileUtils.rm_f(TARGET)
+    end
+
 
     should "run a test" do
-      target = File.join(Dir.tmpdir, 'hydra_test.txt')
-      FileUtils.rm_f(target)
-      assert !File.exists?(target)
-      file = File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb')
-      assert @pipe.gets.is_a?(Hydra::Messages::Runner::RequestFile)
-      @pipe.write(Hydra::Messages::Runner::RunFile.new(:file => file))
-      response = @pipe.gets
-      @pipe.write(Hydra::Messages::Runner::Shutdown.new)
-      assert File.exists?(target)
-      assert_equal "HYDRA", File.read(target)
+      # flip it around to the parent is in the fork, this gives
+      # us more direct control over the runner and proper test
+      # coverage output
+      @pipe = Hydra::Pipe.new
+      @parent = Process.fork do
+        request_a_file_and_verify_completion(@pipe)
+      end
+      run_the_runner(@pipe)
+      Process.wait(@parent)
+    end
+
+    # this flips the above test, so that the main process runs a bit of the parent
+    # code, but only with minimal assertion
+    should "be able to tell a runner to run a test" do
+      @pipe = Hydra::Pipe.new
+      @child = Process.fork do
+        run_the_runner(@pipe)
+      end
+      request_a_file_and_verify_completion(@pipe)
+      Process.wait(@child)
     end
   end
+
+  module RunnerTestHelper
+    def request_a_file_and_verify_completion(pipe)
+      pipe.identify_as_parent
+
+      # make sure it asks for a file, then give it one
+      assert pipe.gets.is_a?(Hydra::Messages::Runner::RequestFile)
+      pipe.write(Hydra::Messages::Runner::RunFile.new(:file => TESTFILE))
+      
+      # grab its response. This makes us wait for it to finish
+      response = pipe.gets
+      
+      # tell it to shut down
+      pipe.write(Hydra::Messages::Runner::Shutdown.new)
+      
+      # ensure it ran
+      assert File.exists?(TARGET)
+      assert_equal "HYDRA", File.read(TARGET)
+
+      pipe.close
+    end
+
+    def run_the_runner(pipe)
+      pipe.identify_as_child
+      Hydra::Runner.new(pipe)
+      pipe.close
+    end
+  end
+  include RunnerTestHelper
 end
+
