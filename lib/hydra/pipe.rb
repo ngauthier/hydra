@@ -1,4 +1,4 @@
-require 'hydra/io'
+require 'hydra/messaging_io'
 module Hydra #:nodoc:
   # Read and write between two processes via pipes. For example:
   #   @pipe = Hydra::Pipe.new

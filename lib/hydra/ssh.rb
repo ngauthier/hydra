@@ -1,5 +1,5 @@
 require 'open3'
-require 'hydra/io'
+require 'hydra/messaging_io'
 module Hydra #:nodoc:
   # Read and write with an ssh connection. For example:
   #   @ssh = Hydra::SSH.new(

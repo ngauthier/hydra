@@ -38,10 +38,6 @@ module Hydra #:nodoc:
     # because the string is not a message.
     class UnprocessableMessage < RuntimeError
       attr_accessor :message
-      # Allow a custom message for the exception.
-      def initialize(message = "Message expected")
-        @message = message    
-      end
     end
   end
 end
