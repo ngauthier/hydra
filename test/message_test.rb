@@ -1,6 +1,6 @@
-require File.join(File.dirname(__FILE__), 'helper')
+require File.join(File.dirname(__FILE__), 'test_helper')
 
-class TestMessage < Test::Unit::TestCase
+class MessageTest < Test::Unit::TestCase
   class MyMessage < Hydra::Message
     attr_accessor :my_var
     def serialize
@@ -17,7 +17,7 @@ class TestMessage < Test::Unit::TestCase
     end
     should "serialize" do
       assert_equal(
-        {:class=>TestMessage::MyMessage, :my_var=>"my value"},
+        {:class=>MyMessage, :my_var=>"my value"},
         eval(@m.serialize)
       )
     end

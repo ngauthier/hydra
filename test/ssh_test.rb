@@ -1,6 +1,6 @@
-require File.join(File.dirname(__FILE__), 'helper')
+require File.join(File.dirname(__FILE__), 'test_helper')
 
-class TestSSH < Test::Unit::TestCase
+class SSHTest < Test::Unit::TestCase
   context "an ssh connection" do
     setup do
       @ssh = Hydra::SSH.new(

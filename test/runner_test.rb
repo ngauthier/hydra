@@ -1,6 +1,6 @@
-require File.join(File.dirname(__FILE__), 'helper')
+require File.join(File.dirname(__FILE__), 'test_helper')
 
-class TestRunner < Test::Unit::TestCase
+class RunnerTest < Test::Unit::TestCase
   context "a test runner" do
     setup do
       @pipe = Hydra::Pipe.new

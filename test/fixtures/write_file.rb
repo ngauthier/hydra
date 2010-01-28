@@ -1,6 +1,6 @@
-require File.join(File.dirname(__FILE__), '..', 'helper')
+require File.join(File.dirname(__FILE__), '..', 'test_helper')
 
-class TestWriteFile < Test::Unit::TestCase
+class WriteFileTest < Test::Unit::TestCase
   should "write file" do
     File.open(File.join(Dir.tmpdir, 'hydra_test.txt'), 'w') do |f|
       f.write "HYDRA"

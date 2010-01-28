@@ -1,6 +1,6 @@
-require File.join(File.dirname(__FILE__), '..', 'helper')
+require File.join(File.dirname(__FILE__), '..', 'test_helper')
 
-class TestAssertTrue < Test::Unit::TestCase
+class AssertTrueTest < Test::Unit::TestCase
   should "be true" do
     assert true
   end
