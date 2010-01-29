@@ -20,11 +20,9 @@ module Hydra #:nodoc:
     def write(message)
       raise IOError unless @writer
       raise UnprocessableMessage unless message.is_a?(Hydra::Message)
-      begin
-        @writer.write(message.serialize+"\n")
-      rescue Errno::EPIPE
-        raise IOError
-      end
+      @writer.write(message.serialize+"\n")
+    rescue Errno::EPIPE
+      raise IOError
     end
 
     # Closes the IO object.

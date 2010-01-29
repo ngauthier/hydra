@@ -39,11 +39,11 @@ module Hydra #:nodoc:
     private
     
     def boot_workers(workers)
-      workers.each do |w|
+      workers.each do |worker|
         pipe = Hydra::Pipe.new
         child = Process.fork do
           pipe.identify_as_child
-          Hydra::Worker.new(:io => pipe, :runners => w[:runners])
+          Hydra::Worker.new(:io => pipe, :runners => worker[:runners])
         end
         pipe.identify_as_parent
         @workers << { :pid => child, :io => pipe, :idle => false }
@@ -51,20 +51,18 @@ module Hydra #:nodoc:
     end
 
     def process_messages
-      @running = true
-
       Thread.abort_on_exception = true
 
-      @workers.each do |w|
+      @workers.each do |worker|
         @listeners << Thread.new do
-          while @running
+          while true
             begin
-              message = w[:io].gets
-              message.handle(self, w) if message
+              message = worker[:io].gets
+              message.handle(self, worker) if message
             rescue IOError => ex
-              $stderr.write "Master lost Worker [#{w.inspect}]\n"
-              w[:io].close
-              @workers.delete(w)
+              $stderr.write "Master lost Worker [#{worker.inspect}]\n"
+              worker[:io].close
+              @workers.delete(worker)
               Thread.exit
             end
           end

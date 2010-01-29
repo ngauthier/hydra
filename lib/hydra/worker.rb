@@ -36,9 +36,9 @@ module Hydra #:nodoc:
     # When the master sends a file down to the worker, it hits this
     # method. Then the worker delegates the file down to a runner.
     def delegate_file(message)
-      r = idle_runner
-      r[:idle] = false
-      r[:io].write(RunFile.new(eval(message.serialize)))
+      runner = idle_runner
+      runner[:idle] = false
+      runner[:io].write(RunFile.new(eval(message.serialize)))
     end
 
     # When a runner finishes, it sends the results up to the worker. Then the
@@ -82,12 +82,19 @@ module Hydra #:nodoc:
       $stdout.write "WORKER| Processing Messages\n" if @verbose
       @running = true
 
-      # Abort the worker if one of the runners has an exception
       # TODO: catch this exception, return a dying message to the master
       # then shutdown
       Thread.abort_on_exception = true
 
-      # Worker listens and handles messages
+      process_messages_from_master
+      process_messages_from_runners
+
+      @listeners.each{|l| l.join }
+      @io.close
+      $stdout.write "WORKER| Done processing messages\n" if @verbose
+    end
+
+    def process_messages_from_master
       @listeners << Thread.new do
         while @running
           begin
@@ -105,9 +112,9 @@ module Hydra #:nodoc:
           end
         end
       end
+    end
 
-      # Runners listen, but when they handle they pass themselves
-      # so we can reference them when we deal with their messages
+    def process_messages_from_runners
       @runners.each do |r|
         @listeners << Thread.new do
           while @running
@@ -125,16 +132,13 @@ module Hydra #:nodoc:
           end
         end
       end
-      @listeners.each{|l| l.join }
-      @io.close
-      $stdout.write "WORKER| Done processing messages\n" if @verbose
     end
 
     # Get the next idle runner
     def idle_runner #:nodoc:
       idle_r = nil
       while idle_r.nil?
-        idle_r = @runners.detect{|r| r[:idle]}
+        idle_r = @runners.detect{|runner| runner[:idle]}
         sleep(1)
       end
       return idle_r
