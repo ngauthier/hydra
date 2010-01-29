@@ -37,6 +37,7 @@ module Hydra #:nodoc:
     # For example, if you tried to write a string, it would fail,
     # because the string is not a message.
     class UnprocessableMessage < RuntimeError
+      # Custom error message
       attr_accessor :message
     end
   end

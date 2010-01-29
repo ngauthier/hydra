@@ -1,5 +1,11 @@
 module Hydra #:nodoc:
   # Hydra class responsible to dispatching runners and communicating with the master.
+  #
+  # The Worker is never run directly by a user. Workers are created by a
+  # Master to delegate to Runners.
+  #
+  # The general convention is to have one Worker per machine on a distributed
+  # network.
   class Worker
     # Create a new worker.
     # * io: The IO object to use to communicate with the master

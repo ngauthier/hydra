@@ -1,5 +1,11 @@
 module Hydra #:nodoc:
-  # Hydra class responsible for running test files
+  # Hydra class responsible for running test files.
+  #
+  # The Runner is never run directly by a user. Runners are created by a
+  # Worker to run test files.
+  #
+  # The general convention is to have one Runner for each logical processor
+  # of a machine.
   class Runner
     # Boot up a runner. It takes an IO object (generally a pipe from its
     # parent) to send it messages on which files to execute.

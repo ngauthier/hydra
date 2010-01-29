@@ -1,5 +1,15 @@
 module Hydra #:nodoc:
+  # Hydra class responsible for delegate work down to workers.
+  #
+  # The Master is run once for any given testing session.
   class Master
+    # Create a new Master
+    #
+    # Options:
+    # * :files
+    #   * An array of test files to be run. These should be relative paths from
+    #     the root of the project, since they may be run on different machines
+    #     which may have different paths.
     def initialize(opts = { })
       @files = opts.fetch(:files) { [] }
       @workers = []
@@ -10,7 +20,8 @@ module Hydra #:nodoc:
 
     # Message handling
     
-    # Send a file down to a worker
+    # Send a file down to a worker. If there are no more files, this will shut the
+    # worker down.
     def send_file(worker)
       f = @files.pop
       if f
