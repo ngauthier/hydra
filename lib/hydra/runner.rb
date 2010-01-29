@@ -13,8 +13,14 @@ module Hydra #:nodoc:
     def process_messages
       @running = true
       while @running
-        message = @io.gets
-        message.handle(self) if message
+        begin
+          message = @io.gets
+          message.handle(self) if message
+          @io.write Hydra::Messages::Runner::Ping.new
+        rescue IOError => ex
+          $stderr.write "Runner lost Worker\n"
+          @running = false
+        end
       end
     end
 

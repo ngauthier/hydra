@@ -43,4 +43,5 @@ end
 
 require 'hydra/message/runner_messages'
 require 'hydra/message/worker_messages'
+require 'hydra/message/master_messages'
 

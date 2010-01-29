@@ -1,54 +1,21 @@
-# runners = []
-# cores.each do |c|
-#   in = pipes[c][0]
-#   out = pipes[c][1]
-#   runners << TestRunner.new(in, out)
-# end
-#
-# files = [ ... ]
-# results = []
-#
-# runners.each do |r|
-#   Thread.new do
-#     while !files.empty?
-#       results << r.run_file(files.pop)
-#     end
-#     r.shutdown
-#   end
-# end
-#
-# puts results.join("\n")
-#
+Master
+boot up workers
+listen for worker messages
+add worker messages to message queue
+process message queue
+"reply" to a message allows sending a message back down to worker
+
+When worker asks for file but no files left, send shutdown message to worker
+when worker connection breaks, end thread
+wait on all threads
+when all threads are done, all workers must be done
 
 
-# Master
-# boot up workers
-# listen for worker messages
-# add worker messages to message queue
-# process message queue
-# "reply" to a message allows sending a message back down to worker
-#
-# When worker asks for file but no files left, send shutdown message to worker
-# when worker connection breaks, end thread
-# wait on all threads
-# when all threads are done, all workers must be done
-#
-#
-# Worker
-# boot up runners
-# listen for runner messages
-# add runner messages to message queue
-# process message queue
-# "reply" to a message allows sending message back down to runner
-#
-# when a runner asks for file but master responds with shutdown, mark self
-#   as terminated, shut down runners. Any runner that asks for a file is
-#   auto-terminated
-# wait for runner threads to finish
-# then exit, breaking master connection
-#
-# Runner
-# when booted, ask for a file
-# then process messages on the queue
-# when it's a file, run it and send a results message
-# when it's a shutdown, break main loop
+
+when a runner asks for file but master responds with shutdown, mark self
+  as terminated, shut down runners. Any runner that asks for a file is
+  auto-terminated
+wait for runner threads to finish
+then exit, breaking master connection
+
+Test individual messages? Ensure they handle the right method? May not be worth it.

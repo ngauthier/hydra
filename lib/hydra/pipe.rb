@@ -51,5 +51,11 @@ module Hydra #:nodoc:
       @reader = @parent_read
       @writer = @parent_write
     end
+
+    # Output pipe nicely
+    def inspect
+      "#<#{self.class} @reader=#{@reader.to_s}, @writer=#{@writer.to_s}>"
+    end
+
   end
 end

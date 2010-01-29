@@ -48,6 +48,7 @@ module Hydra #:nodoc:
       @running = false
       @runners.each do |r|
         r[:io].write(Hydra::Messages::Runner::Shutdown.new)
+        Thread.exit
       end
     end
 
@@ -77,8 +78,14 @@ module Hydra #:nodoc:
       # Worker listens and handles messages
       @listeners << Thread.new do
         while @running
-          message = @io.gets
-          message.handle(self) if message
+          begin
+            message = @io.gets
+            message.handle(self) if message
+            @io.write Hydra::Messages::Worker::Ping.new
+          rescue IOError => ex
+            $stderr.write "Worker lost Master\n"
+            Thread.exit
+          end
         end
       end
 
@@ -91,14 +98,15 @@ module Hydra #:nodoc:
               message = r[:io].gets
               message.handle(self, r) if message
             rescue IOError => ex
-              # If the other end of the pipe closes
-              # we will continue, because we're probably
-              # not @running anymore
+              $stderr.write "Worker lost Runner [#{r.inspect}]\n"
+              @runners.delete(r)
+              Thread.exit
             end
           end
         end
       end
       @listeners.each{|l| l.join }
+      @io.close
     end
 
     # Get the next idle runner
