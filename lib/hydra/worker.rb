@@ -38,7 +38,7 @@ module Hydra #:nodoc:
     def delegate_file(message)
       r = idle_runner
       r[:idle] = false
-      r[:io].write(Hydra::Messages::Runner::RunFile.new(eval(message.serialize)))
+      r[:io].write(Hydra::Messages::Worker::RunFile.new(eval(message.serialize)))
     end
 
     # When a runner finishes, it sends the results up to the worker. Then the
@@ -60,7 +60,7 @@ module Hydra #:nodoc:
       @runners.each do |r|
         $stdout.write "WORKER| Sending Shutdown to Runner\n" if @verbose
         $stdout.write "      | #{r.inspect}\n" if @verbose
-        r[:io].write(Hydra::Messages::Runner::Shutdown.new)
+        r[:io].write(Hydra::Messages::Worker::Shutdown.new)
       end
       Thread.exit
     end

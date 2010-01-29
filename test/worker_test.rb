@@ -44,11 +44,11 @@ class WorkerTest < Test::Unit::TestCase
       num_runners.times do
         assert pipe.gets.is_a?(Hydra::Messages::Worker::RequestFile)
       end
-      pipe.write(Hydra::Messages::Worker::RunFile.new(:file => TESTFILE))
+      pipe.write(Hydra::Messages::Master::RunFile.new(:file => TESTFILE))
 
       assert pipe.gets.is_a?(Hydra::Messages::Worker::Results)
 
-      pipe.write(Hydra::Messages::Worker::Shutdown.new)
+      pipe.write(Hydra::Messages::Master::Shutdown.new)
 
       assert File.exists?(TARGET)
       assert_equal "HYDRA", File.read(TARGET)

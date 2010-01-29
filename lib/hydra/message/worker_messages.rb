@@ -8,11 +8,22 @@ module Hydra #:nodoc:
         end
       end
 
-      # Message telling a worker to delegate a file to a runner
-      # TODO: move to master messages
-      class RunFile < Hydra::Messages::Runner::RunFile
-        def handle(worker) #:nodoc:
-          worker.delegate_file(self)
+      # Message telling the Runner to run a file
+      class RunFile < Hydra::Message
+        # The file that should be run
+        attr_accessor :file
+        def serialize #:nodoc:
+          super(:file => @file)
+        end
+        def handle(runner) #:nodoc:
+          runner.run_file(@file)
+        end
+      end
+
+      # Message to tell the Runner to shut down
+      class Shutdown < Hydra::Message
+        def handle(runner) #:nodoc:
+          runner.stop
         end
       end
 
@@ -20,14 +31,6 @@ module Hydra #:nodoc:
       class Results < Hydra::Messages::Runner::Results
         def handle(master, worker) #:nodoc:
           master.send_file(worker)
-        end
-      end
-
-      # Message telling the worker to shut down.
-      # TODO: move to master
-      class Shutdown < Hydra::Messages::Runner::Shutdown
-        def handle(worker) #:nodoc:
-          worker.shutdown
         end
       end
 

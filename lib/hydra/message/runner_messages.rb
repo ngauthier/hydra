@@ -8,19 +8,6 @@ module Hydra #:nodoc:
         end
       end
 
-      # Message telling the Runner to run a file
-      # TODO: move to worker
-      class RunFile < Hydra::Message
-        # The file that should be run
-        attr_accessor :file
-        def serialize #:nodoc:
-          super(:file => @file)
-        end
-        def handle(runner) #:nodoc:
-          runner.run_file(@file)
-        end
-      end
-
       # Message for the Runner to respond with its results
       class Results < Hydra::Message
         # The output from running the test
@@ -35,14 +22,6 @@ module Hydra #:nodoc:
         end
       end
 
-      # Message to tell the Runner to shut down
-      # TODO: move to worker
-      class Shutdown < Hydra::Message
-        def handle(runner) #:nodoc:
-          runner.stop
-        end
-      end
-      
       # Message a runner sends to a worker to verify the connection
       class Ping < Hydra::Message
         def handle(worker, runner) #:nodoc:

@@ -25,9 +25,9 @@ module Hydra #:nodoc:
     def send_file(worker)
       f = @files.pop
       if f
-        worker[:io].write(Hydra::Messages::Worker::RunFile.new(:file => f))
+        worker[:io].write(Hydra::Messages::Master::RunFile.new(:file => f))
       else
-        worker[:io].write(Hydra::Messages::Worker::Shutdown.new)
+        worker[:io].write(Hydra::Messages::Master::Shutdown.new)
         Thread.exit
       end
     end
@@ -50,7 +50,6 @@ module Hydra #:nodoc:
     def process_messages
       @running = true
 
-      # TODO catch exceptions and report to stdout
       Thread.abort_on_exception = true
 
       @workers.each do |w|

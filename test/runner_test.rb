@@ -41,13 +41,13 @@ class RunnerTest < Test::Unit::TestCase
 
       # make sure it asks for a file, then give it one
       assert pipe.gets.is_a?(Hydra::Messages::Runner::RequestFile)
-      pipe.write(Hydra::Messages::Runner::RunFile.new(:file => TESTFILE))
+      pipe.write(Hydra::Messages::Worker::RunFile.new(:file => TESTFILE))
       
       # grab its response. This makes us wait for it to finish
       response = pipe.gets
       
       # tell it to shut down
-      pipe.write(Hydra::Messages::Runner::Shutdown.new)
+      pipe.write(Hydra::Messages::Worker::Shutdown.new)
       
       # ensure it ran
       assert File.exists?(TARGET)
