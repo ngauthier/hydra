@@ -11,7 +11,6 @@ module Hydra #:nodoc:
     # Create a new worker.
     # * io: The IO object to use to communicate with the master
     # * num_runners: The number of runners to launch
-    # TODO: options hash
     def initialize(opts = {})
       @verbose = opts.fetch(:verbose) { false }
       @io = opts.fetch(:io) { raise "No IO Object" }
@@ -44,8 +43,6 @@ module Hydra #:nodoc:
 
     # When a runner finishes, it sends the results up to the worker. Then the
     # worker sends the results up to the master.
-    # TODO: when we relay results, it should trigger a RunFile or Shutdown from
-    # the master implicitly
     def relay_results(message, runner)
       runner[:idle] = true
       @io.write(Results.new(eval(message.serialize)))
@@ -53,8 +50,6 @@ module Hydra #:nodoc:
 
     # When a master issues a shutdown order, it hits this method, which causes
     # the worker to send shutdown messages to its runners.
-    # TODO: implement a ShutdownComplete message, so that we can kill the
-    # processes if necessary.
     def shutdown
       @running = false
       $stdout.write "WORKER| Notifying #{@runners.size} Runners of Shutdown\n" if @verbose
