@@ -124,7 +124,7 @@ module Hydra #:nodoc:
                 message.handle(self, r)
               end
             rescue IOError => ex
-              $stderr.write "Worker lost Runner [#{r.inspect}]\n"
+              $stderr.write "Worker lost Runner [#{r.inspect}]\n" if @verbose
               Thread.exit
             end
           end

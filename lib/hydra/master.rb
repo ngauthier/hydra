@@ -18,7 +18,12 @@ module Hydra #:nodoc:
       @files = opts.fetch(:files) { [] }
       @workers = []
       @listeners = []
-      boot_workers(opts.fetch(:workers) { [ {:runners => 1} ] } )
+      # default is one worker that is configured to use a pipe with one runner
+      worker_cfg = opts.fetch(:workers) {
+        [ { :type => :local, :runners => 1} ] 
+      }
+
+      boot_workers worker_cfg
       process_messages
     end
 
@@ -39,15 +44,26 @@ module Hydra #:nodoc:
     private
     
     def boot_workers(workers)
-      workers.each do |worker|
-        pipe = Hydra::Pipe.new
-        child = Process.fork do
-          pipe.identify_as_child
-          Hydra::Worker.new(:io => pipe, :runners => worker[:runners])
-        end
-        pipe.identify_as_parent
-        @workers << { :pid => child, :io => pipe, :idle => false }
+      workers.select{|worker| worker[:type] == :local}.each do |worker|
+        boot_local_worker(worker)
       end
+      workers.select{|worker| worker[:type] == :ssh}.each do |worker|
+        boot_ssh_worker(worker)
+      end
+    end
+
+    def boot_local_worker(worker)
+      pipe = Hydra::Pipe.new
+      child = Process.fork do
+        pipe.identify_as_child
+        Hydra::Worker.new(:io => pipe, :runners => worker[:runners])
+      end
+      pipe.identify_as_parent
+      @workers << { :pid => child, :io => pipe, :idle => false }
+    end
+
+    def boot_ssh_worker(worker)
+      raise "Don't know how to boot SSH workers yet"
     end
 
     def process_messages

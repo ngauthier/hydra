@@ -4,6 +4,14 @@ IO selection configuration for master
 
 YML configuration
 
+---
+hydra:
+  workers:
+  - type: local
+    runners: 1
+  - type: ssh
+    connect: localhost
+
 v0.6.0
 
 multitest backwards compatible
