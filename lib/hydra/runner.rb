@@ -7,13 +7,14 @@ module Hydra #:nodoc:
   # The general convention is to have one Runner for each logical processor
   # of a machine.
   class Runner
+    include Hydra::Messages::Runner
     # Boot up a runner. It takes an IO object (generally a pipe from its
     # parent) to send it messages on which files to execute.
     def initialize(opts = {})
       @io = opts.fetch(:io) { raise "No IO Object" } 
       @verbose = opts.fetch(:verbose) { false }
 
-      @io.write Hydra::Messages::Runner::RequestFile.new
+      @io.write RequestFile.new
       process_messages
     end
 
@@ -29,7 +30,7 @@ module Hydra #:nodoc:
             $stdout.write "      | #{message.inspect}\n" if @verbose
             message.handle(self)
           else
-            @io.write Hydra::Messages::Runner::Ping.new
+            @io.write Ping.new
           end
         rescue IOError => ex
           $stderr.write "Runner lost Worker\n" if @verbose
@@ -41,7 +42,7 @@ module Hydra #:nodoc:
     # Run a test file and report the results
     def run_file(file)
       `ruby #{file}`
-      @io.write Hydra::Messages::Runner::Results.new(:output => "Finished", :file => file)
+      @io.write Results.new(:output => "Finished", :file => file)
     end
 
     # Stop running

@@ -7,6 +7,7 @@ module Hydra #:nodoc:
   # The general convention is to have one Worker per machine on a distributed
   # network.
   class Worker
+    include Hydra::Messages::Worker
     # Create a new worker.
     # * io: The IO object to use to communicate with the master
     # * num_runners: The number of runners to launch
@@ -29,7 +30,7 @@ module Hydra #:nodoc:
     # When a runner wants a file, it hits this method with a message.
     # Then the worker bubbles the file request up to the master.
     def request_file(message, runner)
-      @io.write(Hydra::Messages::Worker::RequestFile.new)
+      @io.write(RequestFile.new)
       runner[:idle] = true
     end
 
@@ -38,7 +39,7 @@ module Hydra #:nodoc:
     def delegate_file(message)
       r = idle_runner
       r[:idle] = false
-      r[:io].write(Hydra::Messages::Worker::RunFile.new(eval(message.serialize)))
+      r[:io].write(RunFile.new(eval(message.serialize)))
     end
 
     # When a runner finishes, it sends the results up to the worker. Then the
@@ -47,7 +48,7 @@ module Hydra #:nodoc:
     # the master implicitly
     def relay_results(message, runner)
       runner[:idle] = true
-      @io.write(Hydra::Messages::Worker::Results.new(eval(message.serialize)))
+      @io.write(Results.new(eval(message.serialize)))
     end
 
     # When a master issues a shutdown order, it hits this method, which causes
@@ -60,7 +61,7 @@ module Hydra #:nodoc:
       @runners.each do |r|
         $stdout.write "WORKER| Sending Shutdown to Runner\n" if @verbose
         $stdout.write "      | #{r.inspect}\n" if @verbose
-        r[:io].write(Hydra::Messages::Worker::Shutdown.new)
+        r[:io].write(Shutdown.new)
       end
       Thread.exit
     end
@@ -101,7 +102,7 @@ module Hydra #:nodoc:
               $stdout.write "      | #{message.inspect}\n" if @verbose
               message.handle(self)
             else
-              @io.write Hydra::Messages::Worker::Ping.new
+              @io.write Ping.new
             end
           rescue IOError => ex
             $stderr.write "Worker lost Master\n" if @verbose

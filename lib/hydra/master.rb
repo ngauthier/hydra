@@ -3,6 +3,7 @@ module Hydra #:nodoc:
   #
   # The Master is run once for any given testing session.
   class Master
+    include Hydra::Messages::Master
     # Create a new Master
     #
     # Options:
@@ -25,9 +26,9 @@ module Hydra #:nodoc:
     def send_file(worker)
       f = @files.pop
       if f
-        worker[:io].write(Hydra::Messages::Master::RunFile.new(:file => f))
+        worker[:io].write(RunFile.new(:file => f))
       else
-        worker[:io].write(Hydra::Messages::Master::Shutdown.new)
+        worker[:io].write(Shutdown.new)
         Thread.exit
       end
     end
