@@ -82,8 +82,6 @@ module Hydra #:nodoc:
       $stdout.write "WORKER| Processing Messages\n" if @verbose
       @running = true
 
-      # TODO: catch this exception, return a dying message to the master
-      # then shutdown
       Thread.abort_on_exception = true
 
       process_messages_from_master
