@@ -10,6 +10,9 @@ require 'hydra'
 class Test::Unit::TestCase
 end
 
+TARGET = File.join(Dir.tmpdir, 'hydra_test.txt')
+TESTFILE = File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb')
+
 module Hydra #:nodoc:
   module Messages #:nodoc:
     class TestMessage < Hydra::Message

@@ -4,12 +4,16 @@ module Hydra #:nodoc:
     # Create a new worker.
     # * io: The IO object to use to communicate with the master
     # * num_runners: The number of runners to launch
-    def initialize(io, num_runners)
-      @io = io
+    # TODO: options hash
+    def initialize(opts = {})
+      @verbose = opts.fetch(:verbose) { false }
+      @io = opts.fetch(:io) { raise "No IO Object" }
       @runners = []
       @listeners = []
-      boot_runners(num_runners)
+
+      boot_runners(opts.fetch(:runners) { 1 })
       process_messages
+      
       @runners.each{|r| Process.wait r[:pid] }
     end
 
@@ -46,28 +50,34 @@ module Hydra #:nodoc:
     # processes if necessary.
     def shutdown
       @running = false
+      $stdout.write "WORKER| Notifying #{@runners.size} Runners of Shutdown\n" if @verbose
       @runners.each do |r|
+        $stdout.write "WORKER| Sending Shutdown to Runner\n" if @verbose
+        $stdout.write "      | #{r.inspect}\n" if @verbose
         r[:io].write(Hydra::Messages::Runner::Shutdown.new)
-        Thread.exit
       end
+      Thread.exit
     end
 
     private
 
     def boot_runners(num_runners) #:nodoc:
+      $stdout.write "WORKER| Booting #{num_runners} Runners\n" if @verbose
       num_runners.times do
         pipe = Hydra::Pipe.new
         child = Process.fork do
           pipe.identify_as_child
-          Hydra::Runner.new(pipe)
+          Hydra::Runner.new(:io => pipe, :verbose => @verbose)
         end
         pipe.identify_as_parent
         @runners << { :pid => child, :io => pipe, :idle => false }
       end
+      $stdout.write "WORKER| #{@runners.size} Runners booted\n" if @verbose
     end
 
     # Continuously process messages
     def process_messages #:nodoc:
+      $stdout.write "WORKER| Processing Messages\n" if @verbose
       @running = true
 
       # Abort the worker if one of the runners has an exception
@@ -80,10 +90,15 @@ module Hydra #:nodoc:
         while @running
           begin
             message = @io.gets
-            message.handle(self) if message
-            @io.write Hydra::Messages::Worker::Ping.new
+            if message
+              $stdout.write "WORKER| Received Message from Master\n" if @verbose 
+              $stdout.write "      | #{message.inspect}\n" if @verbose
+              message.handle(self)
+            else
+              @io.write Hydra::Messages::Worker::Ping.new
+            end
           rescue IOError => ex
-            $stderr.write "Worker lost Master\n"
+            $stderr.write "Worker lost Master\n" if @verbose
             Thread.exit
           end
         end
@@ -96,10 +111,13 @@ module Hydra #:nodoc:
           while @running
             begin
               message = r[:io].gets
-              message.handle(self, r) if message
+              if message
+                $stdout.write "WORKER| Received Message from Runner\n" if @verbose
+                $stdout.write "      | #{message.inspect}\n" if @verbose
+                message.handle(self, r)
+              end
             rescue IOError => ex
               $stderr.write "Worker lost Runner [#{r.inspect}]\n"
-              @runners.delete(r)
               Thread.exit
             end
           end
@@ -107,6 +125,7 @@ module Hydra #:nodoc:
       end
       @listeners.each{|l| l.join }
       @io.close
+      $stdout.write "WORKER| Done processing messages\n" if @verbose
     end
 
     # Get the next idle runner

@@ -3,22 +3,30 @@ module Hydra #:nodoc:
   class Runner
     # Boot up a runner. It takes an IO object (generally a pipe from its
     # parent) to send it messages on which files to execute.
-    def initialize(io)
-      @io = io
+    def initialize(opts = {})
+      @io = opts.fetch(:io) { raise "No IO Object" } 
+      @verbose = opts.fetch(:verbose) { false }
+
       @io.write Hydra::Messages::Runner::RequestFile.new
       process_messages
     end
 
     # The runner will continually read messages and handle them.
     def process_messages
+      $stdout.write "RUNNER| Processing Messages\n" if @verbose
       @running = true
       while @running
         begin
           message = @io.gets
-          message.handle(self) if message
-          @io.write Hydra::Messages::Runner::Ping.new
+          if message
+            $stdout.write "RUNNER| Received message from worker\n" if @verbose
+            $stdout.write "      | #{message.inspect}\n" if @verbose
+            message.handle(self)
+          else
+            @io.write Hydra::Messages::Runner::Ping.new
+          end
         rescue IOError => ex
-          $stderr.write "Runner lost Worker\n"
+          $stderr.write "Runner lost Worker\n" if @verbose
           @running = false
         end
       end

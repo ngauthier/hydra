@@ -1,8 +1,5 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-TARGET = File.join(Dir.tmpdir, 'hydra_test.txt')
-TESTFILE = File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb')
-
 class WorkerTest < Test::Unit::TestCase
   context "with a file to test and a destination to verify" do
     setup do
@@ -14,19 +11,18 @@ class WorkerTest < Test::Unit::TestCase
     end
 
     # run the worker in the foreground and the requests in the background
-    should "run a test" do
+    should "run a test in the foreground" do
       num_runners = 4
       pipe = Hydra::Pipe.new
       child = Process.fork do
         request_a_file_and_verify_completion(pipe, num_runners)
-        pipe.close
       end
       run_the_worker(pipe, num_runners)
       Process.wait(child)
     end
 
     # inverse of the above test to run the worker in the background
-    should "be able to tell a worker to run a test" do
+    should "run a test in the background" do
       num_runners = 4
       pipe = Hydra::Pipe.new
       child = Process.fork do
@@ -34,15 +30,13 @@ class WorkerTest < Test::Unit::TestCase
       end
       request_a_file_and_verify_completion(pipe, num_runners)
       Process.wait(child)
-      pipe.close
     end
   end
 
   module WorkerTestHelper
     def run_the_worker(pipe, num_runners)
       pipe.identify_as_child
-      Hydra::Worker.new(pipe, num_runners)
-      pipe.close
+      Hydra::Worker.new({:io => pipe, :runners => num_runners})
     end
 
     def request_a_file_and_verify_completion(pipe, num_runners)
@@ -52,8 +46,7 @@ class WorkerTest < Test::Unit::TestCase
       end
       pipe.write(Hydra::Messages::Worker::RunFile.new(:file => TESTFILE))
 
-      response = pipe.gets
-      assert response.is_a?(Hydra::Messages::Worker::Results)
+      assert pipe.gets.is_a?(Hydra::Messages::Worker::Results)
 
       pipe.write(Hydra::Messages::Worker::Shutdown.new)
 

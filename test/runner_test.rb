@@ -1,8 +1,5 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-TARGET = File.join(Dir.tmpdir, 'hydra_test.txt')
-TESTFILE = File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb')
-
 class RunnerTest < Test::Unit::TestCase
   context "with a file to test and a destination to verify" do
     setup do
@@ -55,14 +52,11 @@ class RunnerTest < Test::Unit::TestCase
       # ensure it ran
       assert File.exists?(TARGET)
       assert_equal "HYDRA", File.read(TARGET)
-
-      pipe.close
     end
 
     def run_the_runner(pipe)
       pipe.identify_as_child
-      Hydra::Runner.new(pipe)
-      pipe.close
+      Hydra::Runner.new({:io => pipe})
     end
   end
   include RunnerTestHelper

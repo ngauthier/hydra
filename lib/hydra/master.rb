@@ -30,7 +30,7 @@ module Hydra #:nodoc:
       child = Process.fork do
         pipe.identify_as_child
         # TODO num runners opt in next line
-        Hydra::Worker.new(pipe, 1)
+        Hydra::Worker.new(:io => pipe, :runners => 1)
       end
       pipe.identify_as_parent
       @workers << { :pid => child, :io => pipe, :idle => false }

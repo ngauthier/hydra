@@ -1,8 +1,5 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
 
-TARGET = File.join(Dir.tmpdir, 'hydra_test.txt')
-TESTFILE = File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb')
-
 class MasterTest < Test::Unit::TestCase
   context "with a file to test and a destination to verify" do
     setup do
