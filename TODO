@@ -8,9 +8,12 @@ YML configuration
 hydra:
   workers:
   - type: local
-    runners: 1
+    runners: 4
   - type: ssh
     connect: localhost
+    directory: /path/to/suite
+    [command: rake hydra:worker RUNNERS=1]
+    runners: 4
 
 v0.6.0
 

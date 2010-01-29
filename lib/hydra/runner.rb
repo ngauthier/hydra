@@ -1,3 +1,4 @@
+require 'test/unit'
 module Hydra #:nodoc:
   # Hydra class responsible for running test files.
   #

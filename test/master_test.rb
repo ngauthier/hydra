@@ -58,5 +58,21 @@ class MasterTest < Test::Unit::TestCase
       finish = Time.now
       assert (finish-start) < 15, "took #{finish-start} seconds"
     end
+
+
+    should "run a test via ssh" do
+      Hydra::Master.new(
+        :files => [test_file],
+        :workers => [{
+          :type => :ssh,
+          :connect => 'localhost',
+          :directory => File.expand_path(File.join(File.dirname(__FILE__), '..')),
+          :runners => 1 
+        }],
+        :verbose => true
+      )
+      assert File.exists?(target_file)
+      assert_equal "HYDRA", File.read(target_file)
+    end
   end
 end

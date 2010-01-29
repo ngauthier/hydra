@@ -18,10 +18,13 @@ module Hydra #:nodoc:
       @files = opts.fetch(:files) { [] }
       @workers = []
       @listeners = []
+      @verbose = opts.fetch(:verbose) { false }
       # default is one worker that is configured to use a pipe with one runner
       worker_cfg = opts.fetch(:workers) {
         [ { :type => :local, :runners => 1} ] 
       }
+
+      $stdout.write "MASTER| Initialized\n" if @verbose
 
       boot_workers worker_cfg
       process_messages
@@ -44,26 +47,41 @@ module Hydra #:nodoc:
     private
     
     def boot_workers(workers)
+      $stdout.write "MASTER| Booting workers\n" if @verbose
       workers.select{|worker| worker[:type] == :local}.each do |worker|
+        $stdout.write "MASTER| Booting local worker\n" if @verbose 
         boot_local_worker(worker)
       end
       workers.select{|worker| worker[:type] == :ssh}.each do |worker|
+        $stdout.write "MASTER| Booting ssh worker\n" if @verbose 
         boot_ssh_worker(worker)
       end
     end
 
     def boot_local_worker(worker)
+      runners = worker.fetch(:runners) { raise "You must specify the number of runners" }
       pipe = Hydra::Pipe.new
       child = Process.fork do
         pipe.identify_as_child
-        Hydra::Worker.new(:io => pipe, :runners => worker[:runners])
+        Hydra::Worker.new(:io => pipe, :runners => runners)
       end
       pipe.identify_as_parent
       @workers << { :pid => child, :io => pipe, :idle => false }
     end
 
     def boot_ssh_worker(worker)
-      raise "Don't know how to boot SSH workers yet"
+      runners = worker.fetch(:runners) { raise "You must specify the number of runners"  }
+      connect = worker.fetch(:connect) { raise "You must specify SSH connection options" }
+      directory = worker.fetch(:directory) { raise "You must specify a remote directory" }
+      command = worker.fetch(:command) { 
+        "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Worker.new(:io => Hydra::Stdio.new, :runners => #{runners});\""
+      }
+
+      ssh = nil
+      child = Process.fork do
+        ssh = Hydra::SSH.new(connect, directory, command)
+      end
+      @workers << { :pid => child, :io => ssh, :idle => false }
     end
 
     def process_messages
