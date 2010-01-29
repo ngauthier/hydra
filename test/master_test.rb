@@ -43,7 +43,19 @@ class MasterTest < Test::Unit::TestCase
         ]
       )
       finish = Time.now
+      assert (finish-start) < 15, "took #{finish-start} seconds"
+    end
 
+    should "run a slow test 10 times on 2 workers with 5 runners each quickly" do
+      start = Time.now
+      Hydra::Master.new(
+        :files => [File.join(File.dirname(__FILE__), 'fixtures', 'slow.rb')]*10,
+        :workers => [
+          { :type => :local, :runners => 5 },
+          { :type => :local, :runners => 5 }
+        ]
+      )
+      finish = Time.now
       assert (finish-start) < 15, "took #{finish-start} seconds"
     end
   end
