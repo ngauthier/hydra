@@ -11,11 +11,14 @@ module Hydra #:nodoc:
     #   * An array of test files to be run. These should be relative paths from
     #     the root of the project, since they may be run on different machines
     #     which may have different paths.
+    # * :workers
+    #   * An array of hashes. Each hash should be the configuration options
+    #     for a worker.
     def initialize(opts = { })
       @files = opts.fetch(:files) { [] }
       @workers = []
       @listeners = []
-      boot_workers
+      boot_workers(opts.fetch(:workers) { [ {:runners => 1} ] } )
       process_messages
     end
 
@@ -35,17 +38,16 @@ module Hydra #:nodoc:
 
     private
     
-    def boot_workers
-      # simple on worker method for now
-      # TODO: read config
-      pipe = Hydra::Pipe.new
-      child = Process.fork do
-        pipe.identify_as_child
-        # TODO num runners opt in next line
-        Hydra::Worker.new(:io => pipe, :runners => 1)
+    def boot_workers(workers)
+      workers.each do |w|
+        pipe = Hydra::Pipe.new
+        child = Process.fork do
+          pipe.identify_as_child
+          Hydra::Worker.new(:io => pipe, :runners => w[:runners])
+        end
+        pipe.identify_as_parent
+        @workers << { :pid => child, :io => pipe, :idle => false }
       end
-      pipe.identify_as_parent
-      @workers << { :pid => child, :io => pipe, :idle => false }
     end
 
     def process_messages
