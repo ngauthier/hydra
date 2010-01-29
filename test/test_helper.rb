@@ -8,10 +8,14 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'hydra'
 
 class Test::Unit::TestCase
-end
+  def target_file
+    File.join(Dir.tmpdir, 'hydra_test.txt')
+  end
 
-TARGET = File.join(Dir.tmpdir, 'hydra_test.txt')
-TESTFILE = File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb')
+  def test_file
+    File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb')
+  end
+end
 
 module Hydra #:nodoc:
   module Messages #:nodoc:

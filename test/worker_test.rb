@@ -3,11 +3,11 @@ require File.join(File.dirname(__FILE__), 'test_helper')
 class WorkerTest < Test::Unit::TestCase
   context "with a file to test and a destination to verify" do
     setup do
-      FileUtils.rm_f(TARGET)
+      FileUtils.rm_f(target_file)
     end
 
     teardown do
-      FileUtils.rm_f(TARGET)
+      FileUtils.rm_f(target_file)
     end
 
     # run the worker in the foreground and the requests in the background
@@ -44,14 +44,14 @@ class WorkerTest < Test::Unit::TestCase
       num_runners.times do
         assert pipe.gets.is_a?(Hydra::Messages::Worker::RequestFile)
       end
-      pipe.write(Hydra::Messages::Master::RunFile.new(:file => TESTFILE))
+      pipe.write(Hydra::Messages::Master::RunFile.new(:file => test_file))
 
       assert pipe.gets.is_a?(Hydra::Messages::Worker::Results)
 
       pipe.write(Hydra::Messages::Master::Shutdown.new)
 
-      assert File.exists?(TARGET)
-      assert_equal "HYDRA", File.read(TARGET)
+      assert File.exists?(target_file)
+      assert_equal "HYDRA", File.read(target_file)
     end
   end
   include WorkerTestHelper
