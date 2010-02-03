@@ -49,24 +49,23 @@ module Hydra #:nodoc:
     def boot_workers(workers)
       $stdout.write "MASTER| Booting workers\n" if @verbose
       workers.select{|worker| worker[:type] == :local}.each do |worker|
-        $stdout.write "MASTER| Booting local worker\n" if @verbose 
         boot_local_worker(worker)
       end
       workers.select{|worker| worker[:type] == :ssh}.each do |worker|
-        $stdout.write "MASTER| Booting ssh worker\n" if @verbose 
-        boot_ssh_worker(worker)
+        @workers << worker # will boot later, during the listening phase
       end
     end
 
     def boot_local_worker(worker)
       runners = worker.fetch(:runners) { raise "You must specify the number of runners" }
+      $stdout.write "MASTER| Booting local worker\n" if @verbose 
       pipe = Hydra::Pipe.new
       child = Process.fork do
         pipe.identify_as_child
         Hydra::Worker.new(:io => pipe, :runners => runners)
       end
       pipe.identify_as_parent
-      @workers << { :pid => child, :io => pipe, :idle => false }
+      @workers << { :pid => child, :io => pipe, :idle => false, :type => :local }
     end
 
     def boot_ssh_worker(worker)
@@ -74,24 +73,28 @@ module Hydra #:nodoc:
       connect = worker.fetch(:connect) { raise "You must specify SSH connection options" }
       directory = worker.fetch(:directory) { raise "You must specify a remote directory" }
       command = worker.fetch(:command) { 
-        "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Worker.new(:io => Hydra::Stdio.new, :runners => #{runners});\""
+        "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Worker.new(:io => Hydra::Stdio.new, :runners => #{runners}, :verbose => #{@verbose});\""
       }
 
-      ssh = nil
-      child = Process.fork do
-        ssh = Hydra::SSH.new(connect, directory, command)
-      end
-      @workers << { :pid => child, :io => ssh, :idle => false }
+      $stdout.write "MASTER| Booting SSH worker\n" if @verbose 
+      ssh = Hydra::SSH.new(connect, directory, command)
+      return { :io => ssh, :idle => false, :type => :ssh }
     end
 
     def process_messages
       Thread.abort_on_exception = true
 
+      $stdout.write "MASTER| Processing Messages\n" if @verbose
+      $stdout.write "MASTER| Workers: #{@workers}\n" if @verbose
       @workers.each do |worker|
         @listeners << Thread.new do
+          $stdout.write "MASTER| Listening to #{worker.inspect}\n" if @verbose
+          worker = boot_ssh_worker(worker) if worker.fetch(:type){ :local } == :ssh
           while true
             begin
+              $stdout.write "MASTER| listen....\n" if @verbose
               message = worker[:io].gets
+              $stdout.write "MASTER| got message: #{message}\n" if @verbose
               message.handle(self, worker) if message
             rescue IOError => ex
               $stderr.write "Master lost Worker [#{worker.inspect}]\n"

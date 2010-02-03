@@ -1,4 +1,5 @@
 require 'test/unit'
+require 'test/unit/testresult'
 module Hydra #:nodoc:
   # Hydra class responsible for running test files.
   #
@@ -16,13 +17,21 @@ module Hydra #:nodoc:
       @verbose = opts.fetch(:verbose) { false }
 
       Test::Unit.run = true
+      $stdout.sync = true
+      $stdout.write "RUNNER| Booted. Sending Request for file\n" if @verbose
 
       @io.write RequestFile.new
-      process_messages
+      begin
+        process_messages
+      rescue => ex
+        $stdout.write "#{ex.to_s}\n" if @verbose
+        raise ex
+      end
     end
 
     # Run a test file and report the results
     def run_file(file)
+      $stdout.write "RUNNER| Running file: #{file}\n" if @verbose
       require file
       output = []
       @result = Test::Unit::TestResult.new

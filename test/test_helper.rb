@@ -9,11 +9,11 @@ require 'hydra'
 
 class Test::Unit::TestCase
   def target_file
-    File.join(Dir.tmpdir, 'hydra_test.txt')
+    File.expand_path(File.join(Dir.tmpdir, 'hydra_test.txt'))
   end
 
   def test_file
-    File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb')
+    File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb'))
   end
 end
 

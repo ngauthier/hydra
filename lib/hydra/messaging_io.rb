@@ -12,9 +12,9 @@ module Hydra #:nodoc:
       message = @reader.gets
       return nil unless message
       return Message.build(eval(message.chomp))
-    rescue SyntaxError => ex
+    rescue SyntaxError, NameError
       $stderr.write "Not a message: [#{message.inspect}]\n"
-      return nil
+      return gets
     end
 
     # Write a Message to the output IO object. It will automatically

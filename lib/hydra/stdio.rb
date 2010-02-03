@@ -8,6 +8,8 @@ module Hydra #:nodoc:
     def initialize()
       @reader = $stdin
       @writer = $stdout
+      @reader.sync = true
+      @writer.sync = true
     end
   end
 end
