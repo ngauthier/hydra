@@ -21,9 +21,7 @@ class MasterTest < Test::Unit::TestCase
     should "run a test 6 times on 1 worker with 2 runners" do
       Hydra::Master.new(
         :files => [test_file]*6,
-        :local => {
-          :runners => 2
-        }
+        :workers => [ { :type => :local, :runners => 2 } ]
       )
       assert File.exists?(target_file)
       assert_equal "HYDRA"*6, File.read(target_file)
@@ -69,6 +67,15 @@ class MasterTest < Test::Unit::TestCase
           :directory => File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib')),
           :runners => 1 
         }]
+      )
+      assert File.exists?(target_file)
+      assert_equal "HYDRA", File.read(target_file)
+    end
+
+    should "run a test with config from a yaml file" do
+      Hydra::Master.new(
+        :files => [test_file],
+        :config => File.join(File.dirname(__FILE__), 'fixtures', 'config.yml')
       )
       assert File.exists?(target_file)
       assert_equal "HYDRA", File.read(target_file)

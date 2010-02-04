@@ -30,8 +30,7 @@ module Hydra #:nodoc:
       # Message relaying the results of a worker up to the master
       class Results < Hydra::Messages::Runner::Results
         def handle(master, worker) #:nodoc:
-          $stdout.write output
-          master.send_file(worker)
+          master.process_results(worker, self)
         end
       end
 

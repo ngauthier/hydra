@@ -102,6 +102,7 @@ module Hydra #:nodoc:
               $stdout.write "      | #{message.inspect}\n" if @verbose
               message.handle(self)
             else
+              $stdout.write "WORKER| Nothing from Master, Pinging\n" if @verbose
               @io.write Ping.new
             end
           rescue IOError => ex

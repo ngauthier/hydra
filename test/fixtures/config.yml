@@ -1,0 +1,4 @@
+---
+  workers:
+    - type: local
+      runners: 2
