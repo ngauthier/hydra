@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{hydra}
-  s.version = "0.6.0"
+  s.version = "0.7.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
-  s.date = %q{2010-02-03}
+  s.date = %q{2010-02-04}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
   s.extra_rdoc_files = [
@@ -25,8 +25,10 @@ Gem::Specification.new do |s|
      "Rakefile",
      "TODO",
      "VERSION",
+     "caliper.yml",
      "hydra.gemspec",
      "lib/hydra.rb",
+     "lib/hydra/hash.rb",
      "lib/hydra/master.rb",
      "lib/hydra/message.rb",
      "lib/hydra/message/master_messages.rb",
@@ -37,8 +39,10 @@ Gem::Specification.new do |s|
      "lib/hydra/runner.rb",
      "lib/hydra/ssh.rb",
      "lib/hydra/stdio.rb",
+     "lib/hydra/trace.rb",
      "lib/hydra/worker.rb",
      "test/fixtures/assert_true.rb",
+     "test/fixtures/config.yml",
      "test/fixtures/echo_the_dolphin.rb",
      "test/fixtures/slow.rb",
      "test/fixtures/write_file.rb",
