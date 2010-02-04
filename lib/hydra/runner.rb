@@ -74,7 +74,7 @@ module Hydra #:nodoc:
             @io.write Ping.new
           end
         rescue IOError => ex
-          $stderr.write "Runner lost Worker"
+          trace "Runner lost Worker"
           @running = false
         end
       end
@@ -92,11 +92,9 @@ module Hydra #:nodoc:
             eval(c.first)
           end
         rescue NameError
-          # $stderr.write "Could not load [#{c.first}] from [#{f}]\n"
-          nil
+          trace "Could not load [#{c.first}] from [#{f}]"
         rescue SyntaxError
-          # $stderr.write "Could not load [#{c.first}] from [#{f}]\n"
-          nil
+          trace "Could not load [#{c.first}] from [#{f}]"
         end
       end
       return klasses.select{|k| k.respond_to? 'suite'}
