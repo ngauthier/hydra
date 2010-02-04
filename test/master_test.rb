@@ -27,10 +27,10 @@ class MasterTest < Test::Unit::TestCase
       assert_equal "HYDRA"*6, File.read(target_file)
     end
 
-    # The test being run sleeps for 2 seconds. So, if this was run in
-    # series, it would take at least 20 seconds. This test ensures that
+    # The test being run sleeps for 5 seconds. So, if this was run in
+    # series, it would take at least 50 seconds. This test ensures that
     # in runs in less than that amount of time. Since there are 10
-    # runners to run the file 10 times, it should only take 2-4 seconds
+    # runners to run the file 10 times, it should only take 5-10 seconds
     # based on overhead.
     should "run a slow test 10 times on 1 worker with 10 runners quickly" do
       start = Time.now
@@ -41,7 +41,7 @@ class MasterTest < Test::Unit::TestCase
         ]
       )
       finish = Time.now
-      assert (finish-start) < 15, "took #{finish-start} seconds"
+      assert (finish-start) < 30, "took #{finish-start} seconds"
     end
 
     should "run a slow test 10 times on 2 workers with 5 runners each quickly" do

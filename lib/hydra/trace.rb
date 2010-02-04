@@ -8,6 +8,7 @@ module Hydra #:nodoc:
         include Hydra::Trace::InstanceMethods
         class << self; attr_accessor :_traceable_prefix; end
         self._traceable_prefix = prefix
+        $stdout.sync = true
       end
     end
 

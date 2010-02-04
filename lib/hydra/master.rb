@@ -5,6 +5,7 @@ module Hydra #:nodoc:
   # The Master is run once for any given testing session.
   class Master
     include Hydra::Messages::Master
+    traceable('MASTER')
     # Create a new Master
     #
     # Options:
@@ -29,10 +30,10 @@ module Hydra #:nodoc:
       # default is one worker that is configured to use a pipe with one runner
       worker_cfg = opts.fetch('workers') { [ { 'type' => 'local', 'runners' => 1} ] }
 
-      $stdout.write "MASTER| Initialized\n" if @verbose
-      $stdout.write "MASTER|   Files:   (#{@files.inspect})\n" if @verbose
-      $stdout.write "MASTER|   Workers: (#{worker_cfg.inspect})\n" if @verbose
-      $stdout.write "MASTER|   Verbose: (#{@verbose.inspect})\n" if @verbose
+      trace "Initialized"
+      trace "  Files:   (#{@files.inspect})"
+      trace "  Workers: (#{worker_cfg.inspect})"
+      trace "  Verbose: (#{@verbose.inspect})"
 
       boot_workers worker_cfg
       process_messages
@@ -52,7 +53,7 @@ module Hydra #:nodoc:
       $stdout.write message.output
       # only delete one
       @incomplete_files.delete_at(@incomplete_files.index(message.file))
-      $stdout.write "MASTER| #{@incomplete_files.size} Files Remaining\n" if @verbose
+      trace "#{@incomplete_files.size} Files Remaining"
       if @incomplete_files.empty?
         shutdown_all_workers
       else
@@ -63,10 +64,10 @@ module Hydra #:nodoc:
     private
     
     def boot_workers(workers)
-      $stdout.write "MASTER| Booting #{workers.size} workers\n" if @verbose
+      trace "Booting #{workers.size} workers"
       workers.each do |worker|
         worker.stringify_keys!
-        $stdout.write "MASTER| worker opts #{worker.inspect}\n" if @verbose
+        trace "worker opts #{worker.inspect}"
         type = worker.fetch('type') { 'local' }
         if type.to_s == 'local'
           boot_local_worker(worker)
@@ -80,7 +81,7 @@ module Hydra #:nodoc:
 
     def boot_local_worker(worker)
       runners = worker.fetch('runners') { raise "You must specify the number of runners" }
-      $stdout.write "MASTER| Booting local worker\n" if @verbose 
+      trace "Booting local worker" 
       pipe = Hydra::Pipe.new
       child = Process.fork do
         pipe.identify_as_child
@@ -98,13 +99,13 @@ module Hydra #:nodoc:
         "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Worker.new(:io => Hydra::Stdio.new, :runners => #{runners}, :verbose => #{@verbose});\""
       }
 
-      $stdout.write "MASTER| Booting SSH worker\n" if @verbose 
+      trace "Booting SSH worker" 
       ssh = Hydra::SSH.new(connect, directory, command)
       return { :io => ssh, :idle => false, :type => :ssh }
     end
 
     def shutdown_all_workers
-      $stdout.write "MASTER| Shutting down all workers\n" if @verbose
+      trace "Shutting down all workers"
       @workers.each do |worker|
         worker[:io].write(Shutdown.new) if worker[:io]
         worker[:io].close if worker[:io] 
@@ -115,11 +116,11 @@ module Hydra #:nodoc:
     def process_messages
       Thread.abort_on_exception = true
 
-      $stdout.write "MASTER| Processing Messages\n" if @verbose
-      $stdout.write "MASTER| Workers: #{@workers.inspect}\n" if @verbose
+      trace "Processing Messages"
+      trace "Workers: #{@workers.inspect}"
       @workers.each do |worker|
         @listeners << Thread.new do
-          $stdout.write "MASTER| Listening to #{worker.inspect}\n" if @verbose
+          trace "Listening to #{worker.inspect}"
            if worker.fetch('type') { 'local' }.to_s == 'ssh'
              worker = boot_ssh_worker(worker)
              @workers << worker
@@ -127,10 +128,10 @@ module Hydra #:nodoc:
           while true
             begin
               message = worker[:io].gets
-              $stdout.write "MASTER| got message: #{message}\n" if @verbose
+              trace "got message: #{message}"
               message.handle(self, worker) if message
             rescue IOError
-              $stderr.write "MASTER| lost Worker [#{worker.inspect}]\n" if @verbose
+              trace "lost Worker [#{worker.inspect}]"
               Thread.exit
             end
           end
