@@ -10,6 +10,7 @@ module Hydra #:nodoc:
   # of a machine.
   class Runner
     include Hydra::Messages::Runner
+    traceable('RUNNER')
     # Boot up a runner. It takes an IO object (generally a pipe from its
     # parent) to send it messages on which files to execute.
     def initialize(opts = {})
@@ -18,20 +19,20 @@ module Hydra #:nodoc:
 
       Test::Unit.run = true
       $stdout.sync = true
-      $stdout.write "RUNNER| Booted. Sending Request for file\n" if @verbose
+      trace 'Booted. Sending Request for file'
 
       @io.write RequestFile.new
       begin
         process_messages
       rescue => ex
-        $stdout.write "#{ex.to_s}\n" if @verbose
+        trace ex.to_s
         raise ex
       end
     end
 
     # Run a test file and report the results
     def run_file(file)
-      $stdout.write "RUNNER| Running file: #{file}\n" if @verbose
+      trace "Running file: #{file}"
       require file
       output = []
       @result = Test::Unit::TestResult.new
@@ -60,20 +61,20 @@ module Hydra #:nodoc:
 
     # The runner will continually read messages and handle them.
     def process_messages
-      $stdout.write "RUNNER| Processing Messages\n" if @verbose
+      trace "Processing Messages"
       @running = true
       while @running
         begin
           message = @io.gets
           if message
-            $stdout.write "RUNNER| Received message from worker\n" if @verbose
-            $stdout.write "      | #{message.inspect}\n" if @verbose
+            trace "Received message from worker"
+            trace "\t#{message.inspect}"
             message.handle(self)
           else
             @io.write Ping.new
           end
         rescue IOError => ex
-          $stderr.write "Runner lost Worker\n" if @verbose
+          $stderr.write "Runner lost Worker"
           @running = false
         end
       end

@@ -1,3 +1,4 @@
+require 'hydra/trace'
 require 'hydra/pipe'
 require 'hydra/ssh'
 require 'hydra/stdio'
