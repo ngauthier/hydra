@@ -139,7 +139,6 @@ module Hydra #:nodoc:
       idle_r = nil
       while idle_r.nil?
         idle_r = @runners.detect{|runner| runner[:idle]}
-        sleep(1)
       end
       return idle_r
     end

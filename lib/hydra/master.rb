@@ -23,6 +23,7 @@ module Hydra #:nodoc:
         opts.merge!(YAML.load_file(config_file).stringify_keys!)
       end
       @files = opts.fetch('files') { [] }
+      @files.sort!{|a,b| File.size(b) <=> File.size(a)} # dumb heuristic
       @incomplete_files = @files.dup
       @workers = []
       @listeners = []
