@@ -83,7 +83,7 @@ module Hydra #:nodoc:
       runners = worker.fetch('runners') { raise "You must specify the number of runners" }
       trace "Booting local worker" 
       pipe = Hydra::Pipe.new
-      child = Process.fork do
+      child = SafeFork.fork do
         pipe.identify_as_child
         Hydra::Worker.new(:io => pipe, :runners => runners, :verbose => @verbose)
       end
@@ -129,7 +129,11 @@ module Hydra #:nodoc:
             begin
               message = worker[:io].gets
               trace "got message: #{message}"
-              message.handle(self, worker) if message
+              # if it exists and its for me.
+              # SSH gives us back echoes, so we need to ignore our own messages
+              if message and !message.class.to_s.index("Worker").nil?
+                message.handle(self, worker) 
+              end
             rescue IOError
               trace "lost Worker [#{worker.inspect}]"
               Thread.exit

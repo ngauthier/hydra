@@ -38,16 +38,21 @@ class RunnerTest < Test::Unit::TestCase
       ssh = Hydra::SSH.new(
         'localhost', 
         File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib')),
-        "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Runner.new(:io => Hydra::Stdio.new);\""
+        "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Runner.new(:io => Hydra::Stdio.new, :verbose => true);\""
       )
       assert ssh.gets.is_a?(Hydra::Messages::Runner::RequestFile)
       ssh.write(Hydra::Messages::Worker::RunFile.new(:file => test_file))
       
       # grab its response. This makes us wait for it to finish
+      echo = ssh.gets # get the ssh echo
       response = ssh.gets
+
+      assert_equal Hydra::Messages::Runner::Results, response.class
       
       # tell it to shut down
       ssh.write(Hydra::Messages::Worker::Shutdown.new)
+
+      ssh.close
       
       # ensure it ran
       assert File.exists?(target_file)

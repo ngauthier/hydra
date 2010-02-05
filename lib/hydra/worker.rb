@@ -68,7 +68,7 @@ module Hydra #:nodoc:
       trace "Booting #{num_runners} Runners"
       num_runners.times do
         pipe = Hydra::Pipe.new
-        child = Process.fork do
+        child = SafeFork.fork do
           pipe.identify_as_child
           Hydra::Runner.new(:io => pipe, :verbose => @verbose)
         end
@@ -98,7 +98,7 @@ module Hydra #:nodoc:
         while @running
           begin
             message = @io.gets
-            if message
+            if message and !message.class.to_s.index("Master").nil?
               trace "Received Message from Master" 
               trace "\t#{message.inspect}"
               message.handle(self)
@@ -120,7 +120,7 @@ module Hydra #:nodoc:
           while @running
             begin
               message = r[:io].gets
-              if message
+              if message and !message.class.to_s.index("Runner").nil?
                 trace "Received Message from Runner"
                 trace "\t#{message.inspect}"
                 message.handle(self, r)

@@ -24,9 +24,14 @@ module Hydra #:nodoc:
     #  Hydra::SSH.new('-p 3022 user@server.com')
     # etc..
     def initialize(connection_options, directory, command)
-      @writer, @reader, @error = popen3("ssh #{connection_options}")
+      @writer, @reader, @error = popen3("ssh -tt #{connection_options}")
       @writer.write("cd #{directory}\n")
       @writer.write(command+"\n")
+    end
+
+    def close
+      @writer.write "exit\n"
+      super
     end
   end
 end

@@ -66,7 +66,7 @@ module Hydra #:nodoc:
       while @running
         begin
           message = @io.gets
-          if message
+          if message and !message.class.to_s.index("Worker").nil?
             trace "Received message from worker"
             trace "\t#{message.inspect}"
             message.handle(self)
@@ -92,9 +92,12 @@ module Hydra #:nodoc:
             eval(c.first)
           end
         rescue NameError
-          trace "Could not load [#{c.first}] from [#{f}]"
+          # means we could not load [c.first], but thats ok, its just not
+          # one of the classes we want to test
+          nil
         rescue SyntaxError
-          trace "Could not load [#{c.first}] from [#{f}]"
+          # see above
+          nil
         end
       end
       return klasses.select{|k| k.respond_to? 'suite'}
