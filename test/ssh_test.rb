@@ -5,11 +5,10 @@ class SSHTest < Test::Unit::TestCase
     ssh = Hydra::SSH.new(
       'localhost', # connect to this machine
       File.expand_path(File.join(File.dirname(__FILE__))), # move to the test directory
-      "ruby fixtures/echo_the_dolphin.rb"
+      "ruby fixtures/hello_world.rb"
     )
-    message = Hydra::Messages::TestMessage.new
-    ssh.write message 
-    assert_equal message.text, ssh.gets.text
+    response = ssh.gets
+    assert_equal "Hello World", response.text
     ssh.close
   end
 end
