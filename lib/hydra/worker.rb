@@ -91,6 +91,7 @@ module Hydra #:nodoc:
       @listeners.each{|l| l.join }
       @io.close
       trace "Done processing messages"
+      exit(0) # avoids test summaries
     end
 
     def process_messages_from_master

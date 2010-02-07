@@ -1,9 +1,57 @@
 = Hydra
 
-A distributed testing toolkit.
+Spread your tests over multiple machines to test your code faster.
 
-Heavily under development and not ready for public use.
+== Description
+
+Hydra is a distributed testing framework. It allows you to distribute
+your tests locally across multiple cores and processors, as well as
+run your tests remotely over SSH.
+
+Hydra's goals are to make distributed testing easy. So as long as
+you can ssh into a computer and run the tests, you can automate
+the distribution with Hydra.
+
+== Usage
+
+In your rakefile:
+
+  require 'hydra'
+  require 'hydra/tasks'
+
+  Hydra::TestTask.new('hydra') do |t|
+    t.add_files 'test/unit/**/*_test.rb'
+    t.add_files 'test/functional/**/*_test.rb'
+    t.add_files 'test/integration/**/*_test.rb'
+  end
+
+Then you can run 'rake hydra'.
+
+== Configuration
+
+Place the config file in the main project directory as
+'hydra.yml' or 'config/hydra.yml'.
+
+  workers:
+    - type: local
+      runners: 2
+    - type: ssh
+      connect: user@example.com -p3022
+      directory: /absolute/path/to/project
+      runners: 4
+
+The "connect" option is passed to SSH. So if you've setup an
+ssh config alias to a server, you can use that.
+
+The "directory" option is the path for the project directory
+where the tests should be run.
+
+The "runners" option is how many processes will be running
+on the remote machine. It's best to pick the same number
+as the number of cores on that machine (as well as your
+own).
 
 == Copyright
 
 Copyright (c) 2010 Nick Gauthier. See LICENSE for details.
+
