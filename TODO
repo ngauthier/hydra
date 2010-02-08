@@ -1,27 +1,29 @@
-IO selection configuration for master
-- allow pipe setup
-- allow ssh setup
+= Hydra TODO
 
-YML configuration
+== Rsync
+Split SSH into:
 
----
-hydra:
-  workers:
-  - type: local
-    runners: 4
-  - type: ssh
-    connect: localhost
-    directory: /path/to/suite
-    [command: rake hydra:worker RUNNERS=1]
-    runners: 4
+  connect: user@site.com
+  ssh_options: -p 3022
 
-v0.6.0
+Then make an rsync section:
 
-multitest backwards compatible
+  rsync:
+    source: /path/to/code/locally
+    exclude:
+      - tmp
+      - log
+      - config/test/database.yml
+      - db/*.sqlite3
+      etc...
 
-v0.7.0
+options: -az
 
-???
+== Setup
 
-v1.0.0
+Provide a hydra:setup task to override to be run remotely before testing
+
+
+
+
 
