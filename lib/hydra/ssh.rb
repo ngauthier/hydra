@@ -17,18 +17,21 @@ module Hydra #:nodoc:
     include Open3
     include Hydra::MessagingIO
 
-    # Initialize new SSH connection. The single parameters is passed
-    # directly to ssh for starting a connection. So you can do:
-    #  Hydra::SSH.new('localhost')
-    #  Hydra::SSH.new('user@server.com')
-    #  Hydra::SSH.new('-p 3022 user@server.com')
-    # etc..
+    # Initialize new SSH connection.
+    # The first parameter is passed directly to ssh for starting a connection.
+    # The second parameter is the directory to CD into once connected.
+    # The third parameter is the command to run
+    # So you can do:
+    #   Hydra::SSH.new('-p 3022 user@server.com', '/home/user/Desktop', 'ls -l')
+    # To connect to server.com as user on port 3022, then CD to their desktop, then
+    # list all the files.
     def initialize(connection_options, directory, command)
       @writer, @reader, @error = popen3("ssh -tt #{connection_options}")
       @writer.write("cd #{directory}\n")
       @writer.write(command+"\n")
     end
 
+    # Close the SSH connection
     def close
       @writer.write "exit\n"
       super

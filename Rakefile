@@ -11,7 +11,6 @@ begin
     gem.homepage = "http://github.com/ngauthier/hydra"
     gem.authors = ["Nick Gauthier"]
     gem.add_development_dependency "shoulda", "= 2.10.3"
-    gem.add_dependency "net-ssh", "= 2.0.19"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

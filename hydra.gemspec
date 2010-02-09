@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
-  s.date = %q{2010-02-06}
+  s.date = %q{2010-02-09}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
   s.extra_rdoc_files = [
@@ -81,14 +81,11 @@ Gem::Specification.new do |s|
 
     if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<shoulda>, ["= 2.10.3"])
-      s.add_runtime_dependency(%q<net-ssh>, ["= 2.0.19"])
     else
       s.add_dependency(%q<shoulda>, ["= 2.10.3"])
-      s.add_dependency(%q<net-ssh>, ["= 2.0.19"])
     end
   else
     s.add_dependency(%q<shoulda>, ["= 2.10.3"])
-    s.add_dependency(%q<net-ssh>, ["= 2.0.19"])
   end
 end
 

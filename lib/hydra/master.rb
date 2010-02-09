@@ -94,14 +94,17 @@ module Hydra #:nodoc:
 
     def boot_ssh_worker(worker)
       runners = worker.fetch('runners') { raise "You must specify the number of runners"  }
-      connect = worker.fetch('connect') { raise "You must specify SSH connection options" }
+      connect = worker.fetch('connect') { raise "You must specify an SSH connection target" }
+      ssh_opts = worker.fetch('ssh_opts') { "" }
       directory = worker.fetch('directory') { raise "You must specify a remote directory" }
       command = worker.fetch('command') { 
         "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Worker.new(:io => Hydra::Stdio.new, :runners => #{runners}, :verbose => #{@verbose});\""
       }
 
+      trace "Synchronizing with #{connect} [NOT REALLY]"
+
       trace "Booting SSH worker" 
-      ssh = Hydra::SSH.new(connect, directory, command)
+      ssh = Hydra::SSH.new("#{ssh_opts} #{connect}", directory, command)
       return { :io => ssh, :idle => false, :type => :ssh }
     end
 
