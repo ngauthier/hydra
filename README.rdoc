@@ -25,31 +25,92 @@ In your rakefile:
     t.add_files 'test/integration/**/*_test.rb'
   end
 
-Then you can run 'rake hydra'.
+Run:
+
+  $ rake hydra
+
+Hydra defaults to Single Core mode, so you may want to configure it
+to use two (or more) of your cores if you have a multi-processing machine.
 
 == Configuration
 
 Place the config file in the main project directory as
 'hydra.yml' or 'config/hydra.yml'.
 
+=== Examples
+
+==== Dual Core 
+
+  workers:
+    - type: local
+      runners: 2
+
+==== Dual Core, with a remote Quad Core server
+
+The -p3022 tells it to connect on a different port
+
   workers:
     - type: local
       runners: 2
     - type: ssh
-      connect: user@example.com -p3022
+      connect: user@example.com
+      ssh_opts: -p3022
       directory: /absolute/path/to/project
       runners: 4
 
-The "connect" option is passed to SSH. So if you've setup an
-ssh config alias to a server, you can use that.
+==== Two Remote Quad Cores with Synchronization
 
-The "directory" option is the path for the project directory
-where the tests should be run.
+You can use the 'sync' configuration to allow rsync to synchronize
+the local and remote directories every time you run hydra.
 
-The "runners" option is how many processes will be running
-on the remote machine. It's best to pick the same number
+  workers:
+    - type: ssh
+      connect: user@alpha.example.com
+      directory: /path/to/project/on/alpha/
+      runners: 4
+    - type: ssh
+      connect: user@beta.example.com
+      directory: /path/to/project/on/beta/
+      runners: 4
+
+  sync:
+      directory: /my/local/project/directory
+      exclude:
+        - tmp
+        - log
+        - doc
+
+=== Workers Options
+
+==== type
+
+Either "local" or "ssh".
+
+==== runners
+
+The *runners* option is how many processes will be running
+on the machine. It's best to pick the same number
 as the number of cores on that machine (as well as your
 own).
+
+=== SSH Options
+
+==== connect
+
+The *connect* option is passed to SSH. So if you've setup an
+ssh config alias to a server, you can use that. It is also
+used in rsync, so you cannot use options.
+
+==== ssh_opts
+
+The *ssh_opts* option is passed to SSH and to Rsync's RSH so
+that you can use the same ssh options for connecting and rsync.
+Use ssh_opts to set the port or compression options.
+
+==== directory
+
+The *directory* option is the path for the project directory
+where the tests should be run.
 
 == Copyright
 

@@ -13,6 +13,7 @@ module Hydra #:nodoc:
       return nil unless message
       return Message.build(eval(message.chomp))
     rescue SyntaxError, NameError
+      # uncomment to help catch remote errors by seeing all traffic
       #$stderr.write "Not a message: [#{message.inspect}]\n"
       return gets
     end

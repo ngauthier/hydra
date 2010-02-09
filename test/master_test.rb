@@ -57,7 +57,6 @@ class MasterTest < Test::Unit::TestCase
       assert (finish-start) < 15, "took #{finish-start} seconds"
     end
 
-
     should "run a test via ssh" do
       Hydra::Master.new(
         :files => [test_file],
@@ -79,6 +78,58 @@ class MasterTest < Test::Unit::TestCase
       )
       assert File.exists?(target_file)
       assert_equal "HYDRA", File.read(target_file)
+    end
+
+    should "synchronize a test file over ssh with rsync" do
+      local = File.join(Dir.tmpdir, 'hydra', 'local')
+      remote = File.join(Dir.tmpdir, 'hydra', 'remote')
+      sync_test = File.join(File.dirname(__FILE__), 'fixtures', 'sync_test.rb')
+      [local, remote].each{|f| FileUtils.rm_rf f; FileUtils.mkdir_p f}
+
+      # setup the folders:
+      # local:
+      #   - test_a
+      #   - test_c
+      # remote:
+      #   - test_b
+      #
+      # add test_c to exludes
+      FileUtils.cp(sync_test, File.join(local, 'test_a.rb'))
+      FileUtils.cp(sync_test, File.join(local, 'test_c.rb'))
+      FileUtils.cp(sync_test, File.join(remote, 'test_b.rb'))
+
+      # ensure a is not on remote
+      assert !File.exists?(File.join(remote, 'test_a.rb')), "A should not be on remote"
+      # ensure c is not on remote
+      assert !File.exists?(File.join(remote, 'test_c.rb')), "C should not be on remote"
+      # ensure b is on remote
+      assert File.exists?(File.join(remote, 'test_b.rb')),  "B should be on remote"
+
+      # fake as if the test got run, so only the sync code is really being tested
+      fake_result = Hydra::Messages::Worker::Results.new(
+        :file => 'test_a.rb', :output => '.'
+      ).serialize.inspect
+
+      Hydra::Master.new(
+        :files => ['test_a.rb'],
+        :workers => [{
+          :type => :ssh,
+          :connect => 'localhost',
+          :directory => remote,
+          :runners => 1,
+          :command => "ruby -e 'puts #{fake_result}' && exit"
+        }],
+        :sync => {
+          :directory => local,
+          :exclude => ['test_c.rb']
+        }
+      )
+      # ensure a is copied
+      assert File.exists?(File.join(remote, 'test_a.rb')), "A was not copied"
+      # ensure c is not copied
+      assert !File.exists?(File.join(remote, 'test_c.rb')), "C was copied, should be excluded"
+      # ensure b is deleted
+      assert !File.exists?(File.join(remote, 'test_b.rb')), "B was not deleted"
     end
   end
 end

@@ -1,24 +1,5 @@
 = Hydra TODO
 
-== Rsync
-Split SSH into:
-
-  connect: user@site.com
-  ssh_options: -p 3022
-
-Then make an rsync section:
-
-  rsync:
-    source: /path/to/code/locally
-    exclude:
-      - tmp
-      - log
-      - config/test/database.yml
-      - db/*.sqlite3
-      etc...
-
-options: -az
-
 == Setup
 
 Provide a hydra:setup task to override to be run remotely before testing

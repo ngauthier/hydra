@@ -33,7 +33,13 @@ module Hydra #:nodoc:
     # Run a test file and report the results
     def run_file(file)
       trace "Running file: #{file}"
-      require file
+      begin
+        require file
+      rescue LoadError => ex
+        trace "#{file} does not exist [#{ex.to_s}]"
+        @io.write Results.new(:output => ex.to_s, :file => file)
+        return
+      end
       output = []
       @result = Test::Unit::TestResult.new
       @result.add_listener(Test::Unit::TestResult::FAULT) do |value|

@@ -1,10 +1,12 @@
 require 'hydra/hash'
+require 'open3'
 module Hydra #:nodoc:
   # Hydra class responsible for delegate work down to workers.
   #
   # The Master is run once for any given testing session.
   class Master
     include Hydra::Messages::Master
+    include Open3
     traceable('MASTER')
     # Create a new Master
     #
@@ -22,12 +24,15 @@ module Hydra #:nodoc:
       if config_file
         opts.merge!(YAML.load_file(config_file).stringify_keys!)
       end
-      @files = opts.fetch('files') { [] }
+      @files = Array(opts.fetch('files') { nil })
+      raise "No files, nothing to do" if @files.empty?
       @files.sort!{|a,b| File.size(b) <=> File.size(a)} # dumb heuristic
       @incomplete_files = @files.dup
       @workers = []
       @listeners = []
       @verbose = opts.fetch('verbose') { false }
+      @sync = opts.fetch('sync') { nil }
+
       # default is one worker that is configured to use a pipe with one runner
       worker_cfg = opts.fetch('workers') { [ { 'type' => 'local', 'runners' => 1} ] }
 
@@ -42,10 +47,10 @@ module Hydra #:nodoc:
 
     # Message handling
     
-    # Send a file down to a worker. If there are no more files, this will shut the
-    # worker down.
+    # Send a file down to a worker. 
     def send_file(worker)
       f = @files.pop
+      trace "Sending #{f.inspect}"
       worker[:io].write(RunFile.new(:file => f)) if f
     end
 
@@ -101,7 +106,27 @@ module Hydra #:nodoc:
         "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Worker.new(:io => Hydra::Stdio.new, :runners => #{runners}, :verbose => #{@verbose});\""
       }
 
-      trace "Synchronizing with #{connect} [NOT REALLY]"
+      if @sync
+        @sync.stringify_keys!
+        trace "Synchronizing with #{connect}\n\t#{@sync.inspect}"
+        local_dir = @sync.fetch('directory') { 
+          raise "You must specify a synchronization directory"
+        }
+        exclude_paths = @sync.fetch('exclude') { [] }
+        exclude_opts = exclude_paths.inject(''){|memo, path| memo += "--exclude=#{path} "}
+
+        rsync_command = [
+          'rsync',
+          '-avz',
+          '--delete',
+          exclude_opts,
+          File.expand_path(local_dir)+'/',
+          "-e \"ssh #{ssh_opts}\"",
+          "#{connect}:#{directory}"
+        ].join(" ")
+        trace rsync_command
+        trace `#{rsync_command}`
+      end
 
       trace "Booting SSH worker" 
       ssh = Hydra::SSH.new("#{ssh_opts} #{connect}", directory, command)
