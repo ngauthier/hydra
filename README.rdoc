@@ -132,6 +132,12 @@ Use ssh_opts to set the port or compression options.
 The *directory* option is the path for the project directory
 where the tests should be run.
 
+== More Information
+
+For more information on Hydra, check out the rdocs:
+
+http://rdoc.info/projects/ngauthier/hydra
+
 == Copyright
 
 Copyright (c) 2010 Nick Gauthier. See LICENSE for details.
