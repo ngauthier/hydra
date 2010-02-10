@@ -1,5 +1,7 @@
 require 'test/unit'
 require 'test/unit/testresult'
+Test::Unit.run = true
+
 module Hydra #:nodoc:
   # Hydra class responsible for running test files.
   #
@@ -15,9 +17,7 @@ module Hydra #:nodoc:
     # parent) to send it messages on which files to execute.
     def initialize(opts = {})
       @io = opts.fetch(:io) { raise "No IO Object" } 
-      @verbose = opts.fetch(:verbose) { false }
-
-      Test::Unit.run = true
+      @verbose = opts.fetch(:verbose) { false }      
       $stdout.sync = true
       trace 'Booted. Sending Request for file'
 
