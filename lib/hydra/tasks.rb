@@ -65,8 +65,6 @@ module Hydra #:nodoc:
       if @config
         @opts.merge!(:config => @config)
       else
-        $stderr.write "Hydra: No configuration file found at 'hydra.yml' or 'config/hydra.yml'\n"
-        $stderr.write "Hydra: Using default configuration for a single-core machine\n"
         @opts.merge!(:workers => [{:type => :local, :runners => 1}])
       end
 
@@ -99,13 +97,11 @@ module Hydra #:nodoc:
       @name = name
       yield self if block_given?
       @config = find_config_file
-
-      unless @config
-        $stderr.write "No config file. Can't run a remote task without remote workers\n"
-        return
+      if @config
+        define
+      else
+        task "hydra:remote:#{@name}" do ; end
       end
-
-      define
     end
 
     private
@@ -115,7 +111,6 @@ module Hydra #:nodoc:
         config = YAML.load_file(@config)
         workers = config.fetch('workers') { [] }
         workers = workers.select{|w| w['type'] == 'ssh'}
-        raise "No remote workers" if workers.empty?
         workers.each do |worker|
           $stdout.write "==== Hydra Running #{@name} on #{worker['connect']} ====\n"
           ssh_opts = worker.fetch('ssh_opts') { '' }
