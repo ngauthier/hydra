@@ -1,10 +1,8 @@
 = Hydra TODO
 
-== Setup
+Fix test runner output. Local runners are dumping test unit summaries
+and it looks bad.
 
-Provide a hydra:setup task to override to be run remotely before testing
-
-
-
+Add in a time report
 
 
