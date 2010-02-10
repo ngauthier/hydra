@@ -32,6 +32,26 @@ Run:
 Hydra defaults to Single Core mode, so you may want to configure it
 to use two (or more) of your cores if you have a multi-processing machine.
 
+== Running Remote Tasks
+
+You can run tasks across all of your remote workers easily with Hydra. In your rake file, add:
+
+  Hydra::RemoteTask.new('db:reset')
+
+Then you can run:
+
+  rake hydra:remote:db:reset
+
+== Running Global Tasks
+
+A Global task is a task run locally *and* remotely. It's used in the same way as RemoteTask:
+
+  Hydra::GlobalTask.new('db:reset')
+
+But it is invoked in a higher namespace:
+
+  rake hydra:db:reset
+
 == Configuration
 
 Place the config file in the main project directory as
