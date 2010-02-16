@@ -26,7 +26,6 @@ module Hydra #:nodoc:
       end
       @files = Array(opts.fetch('files') { nil })
       raise "No files, nothing to do" if @files.empty?
-      @files.sort!{|a,b| File.size(b) <=> File.size(a)} # dumb heuristic
       @incomplete_files = @files.dup
       @workers = []
       @listeners = []

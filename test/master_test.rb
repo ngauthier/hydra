@@ -3,6 +3,8 @@ require File.join(File.dirname(__FILE__), 'test_helper')
 class MasterTest < Test::Unit::TestCase
   context "with a file to test and a destination to verify" do
     setup do
+      # avoid having other tests interfering with us
+      sleep(0.25)
       FileUtils.rm_f(target_file)
     end
 
