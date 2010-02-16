@@ -48,7 +48,7 @@ module Hydra #:nodoc:
     
     # Send a file down to a worker. 
     def send_file(worker)
-      f = @files.pop
+      f = @files.shift
       trace "Sending #{f.inspect}"
       worker[:io].write(RunFile.new(:file => f)) if f
     end
