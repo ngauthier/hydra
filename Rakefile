@@ -49,4 +49,5 @@ Rake::RDocTask.new do |rdoc|
   rdoc.title = "hydra #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
+  rdoc.options << '--charset=utf-8'
 end
