@@ -18,6 +18,10 @@ module Hydra #:nodoc:
     # Path to the hydra config file.
     # If not set, it will check 'hydra.yml' and 'config/hydra.yml'
     attr_accessor :config
+
+    # Set to true if you want hydra to generate a report.
+    # Defaults to fals
+    attr_accessor :report
     #
     # Search for the hydra config file
     def find_config_file
@@ -45,6 +49,7 @@ module Hydra #:nodoc:
   #     t.add_files 'test/functional/**/*_test.rb'
   #     t.add_files 'test/integration/**/*_test.rb'
   #     t.verbose = false # optionally set to true for lots of debug messages
+  #     t.report = true # optionally set to true for a final report of test times
   #   end  
   class TestTask < Hydra::Task
 
@@ -53,6 +58,7 @@ module Hydra #:nodoc:
       @name = name
       @files = []
       @verbose = false
+      @report = false
 
       yield self if block_given?
 
@@ -60,6 +66,7 @@ module Hydra #:nodoc:
 
       @opts = {
         :verbose => @verbose,
+        :report => @report,
         :files => @files
       }
       if @config
@@ -77,7 +84,8 @@ module Hydra #:nodoc:
       desc "Hydra Tests" + (@name == :hydra ? "" : " for #{@name}")
       task @name do
         $stdout.write "Hydra Testing #{files.inspect}\n"
-        Hydra::Master.new(@opts)
+        h = Hydra::Master.new(@opts)
+        $stdout.write h.report_text if @report
         $stdout.write "\nHydra Completed\n"
         exit(0) #bypass test on_exit output
       end

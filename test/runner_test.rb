@@ -3,6 +3,7 @@ require File.join(File.dirname(__FILE__), 'test_helper')
 class RunnerTest < Test::Unit::TestCase
   context "with a file to test and a destination to verify" do
     setup do
+      sleep(0.2)
       FileUtils.rm_f(target_file)
     end
 

@@ -20,6 +20,18 @@ class MasterTest < Test::Unit::TestCase
       assert_equal "HYDRA", File.read(target_file)
     end
 
+    should "generate a report" do
+      Hydra::Master.new(
+        :files => [test_file],
+        :report => true
+      )
+      assert File.exists?(target_file)
+      assert_equal "HYDRA", File.read(target_file)
+      report_file = File.join(Dir.tmpdir, 'hydra_report.txt')
+      assert File.exists?(report_file)
+      assert_equal 2, File.read(report_file).split("\n").size
+    end
+
     should "run a test 6 times on 1 worker with 2 runners" do
       Hydra::Master.new(
         :files => [test_file]*6,

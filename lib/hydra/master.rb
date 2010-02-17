@@ -1,5 +1,6 @@
 require 'hydra/hash'
 require 'open3'
+require 'tmpdir'
 module Hydra #:nodoc:
   # Hydra class responsible for delegate work down to workers.
   #
@@ -30,6 +31,8 @@ module Hydra #:nodoc:
       @workers = []
       @listeners = []
       @verbose = opts.fetch('verbose') { false }
+      @report = opts.fetch('report') { false }
+      init_report_file
       @sync = opts.fetch('sync') { nil }
 
       # default is one worker that is configured to use a pipe with one runner
@@ -49,8 +52,11 @@ module Hydra #:nodoc:
     # Send a file down to a worker. 
     def send_file(worker)
       f = @files.shift
-      trace "Sending #{f.inspect}"
-      worker[:io].write(RunFile.new(:file => f)) if f
+      if f
+        trace "Sending #{f.inspect}"
+        report_start_time(f)
+        worker[:io].write(RunFile.new(:file => f))
+      end
     end
 
     # Process the results coming back from the worker.
@@ -59,12 +65,16 @@ module Hydra #:nodoc:
       # only delete one
       @incomplete_files.delete_at(@incomplete_files.index(message.file))
       trace "#{@incomplete_files.size} Files Remaining"
+      report_finish_time(message.file)
       if @incomplete_files.empty?
         shutdown_all_workers
       else
         send_file(worker)
       end
     end
+
+    # A text report of the time it took to run each file
+    attr_reader :report_text
 
     private
     
@@ -171,6 +181,35 @@ module Hydra #:nodoc:
       end
       
       @listeners.each{|l| l.join}
+
+      generate_report
     end
+
+    def init_report_file
+      @report_file = File.join(Dir.tmpdir, 'hydra_report.txt')
+      FileUtils.rm_f(@report_file)
+    end
+
+    def report_start_time(file)
+      File.open(@report_file, 'a'){|f| f.write "#{file}|start|#{Time.now.to_f}\n" }
+    end
+
+    def report_finish_time(file)
+      File.open(@report_file, 'a'){|f| f.write "#{file}|finish|#{Time.now.to_f}\n" }
+    end
+
+    def generate_report
+      report = {}
+      lines = nil
+      File.open(@report_file, 'r'){|f| lines = f.read.split("\n")}
+      lines.each{|l| l = l.split('|'); report[l[0]] ||= {}; report[l[0]][l[1]] = l[2]}
+      report.each{|file, times| report[file]['duration'] = times['finish'].to_f - times['start'].to_f}
+      report = report.sort{|a, b| b[1]['duration'] <=> a[1]['duration']}
+      output = [""]
+      report.each{|file, times| output << "%.2f\t#{file}" % times['duration']}
+      output << "Report available @ #{@report_file}"
+      @report_text = output.join("\n")
+    end
+
   end
 end
