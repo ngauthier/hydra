@@ -4,7 +4,7 @@ class MasterTest < Test::Unit::TestCase
   context "with a file to test and a destination to verify" do
     setup do
       # avoid having other tests interfering with us
-      sleep(0.25)
+      sleep(0.2)
       FileUtils.rm_f(target_file)
     end
 

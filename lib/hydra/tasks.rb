@@ -20,8 +20,15 @@ module Hydra #:nodoc:
     attr_accessor :config
 
     # Set to true if you want hydra to generate a report.
-    # Defaults to fals
+    # Defaults to false
     attr_accessor :report
+
+    # Automatically sort files using their historical runtimes.
+    # Defaults to true
+    # To disable:
+    #   t.autosort = false
+    attr_accessor :autosort
+
     #
     # Search for the hydra config file
     def find_config_file
@@ -59,6 +66,7 @@ module Hydra #:nodoc:
       @files = []
       @verbose = false
       @report = false
+      @autosort = true
 
       yield self if block_given?
 
@@ -67,6 +75,7 @@ module Hydra #:nodoc:
       @opts = {
         :verbose => @verbose,
         :report => @report,
+        :autosort => @autosort,
         :files => @files
       }
       if @config
@@ -85,7 +94,7 @@ module Hydra #:nodoc:
       task @name do
         $stdout.write "Hydra Testing #{files.inspect}\n"
         h = Hydra::Master.new(@opts)
-        $stdout.write h.report_text if @report
+        $stdout.write "\n"+h.report_text if @report
         $stdout.write "\nHydra Completed\n"
         exit(0) #bypass test on_exit output
       end
