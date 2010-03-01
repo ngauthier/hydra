@@ -1,8 +1,18 @@
 = Hydra TODO
 
-Fix test runner output. Local runners are dumping test unit summaries
-and it looks bad.
+* hydra:sync task that runs the SSH syncing for remote workers
+* ensure same version is running remotely (gem directive)
+* on a crash, bubble up error messages
+* send workers a "boot" message with all the files that will be tested so that it
+  can boot the environment before forking runners
+* named configurations (i.e. 'local', 'remote', 'myconfig') so users can swap configs with an
+  environment variable or with a hydra testtask option
 
-Add in a time report
+== Reporting
 
+Refactor reporting into an event listening system. Add in a default listener that messages:
+
+* Files at start
+* Progress status "50% (10/20 files)"
+* Time report at the end
 
