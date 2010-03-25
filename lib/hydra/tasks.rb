@@ -56,7 +56,7 @@ module Hydra #:nodoc:
   #     t.add_files 'test/functional/**/*_test.rb'
   #     t.add_files 'test/integration/**/*_test.rb'
   #     t.verbose = false # optionally set to true for lots of debug messages
-  #     t.report = true # optionally set to true for a final report of test times
+  #     t.autosort = false # disable automatic sorting based on runtime of tests
   #   end  
   class TestTask < Hydra::Task
 
@@ -65,8 +65,8 @@ module Hydra #:nodoc:
       @name = name
       @files = []
       @verbose = false
-      @report = false
       @autosort = true
+      @listeners = [Hydra::Listener::MinimalOutput.new]
 
       yield self if block_given?
 
@@ -74,9 +74,9 @@ module Hydra #:nodoc:
 
       @opts = {
         :verbose => @verbose,
-        :report => @report,
         :autosort => @autosort,
-        :files => @files
+        :files => @files,
+        :listeners => @listeners
       }
       if @config
         @opts.merge!(:config => @config)
@@ -92,10 +92,7 @@ module Hydra #:nodoc:
     def define
       desc "Hydra Tests" + (@name == :hydra ? "" : " for #{@name}")
       task @name do
-        $stdout.write "Hydra Testing #{files.inspect}\n"
-        h = Hydra::Master.new(@opts)
-        $stdout.write "\n"+h.report_text if @report
-        $stdout.write "\nHydra Completed\n"
+        Hydra::Master.new(@opts)
         exit(0) #bypass test on_exit output
       end
     end

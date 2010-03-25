@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
-  s.date = %q{2010-02-18}
+  s.date = %q{2010-03-25}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
   s.extra_rdoc_files = [
@@ -30,6 +30,9 @@ Gem::Specification.new do |s|
      "hydra_gray.png",
      "lib/hydra.rb",
      "lib/hydra/hash.rb",
+     "lib/hydra/listener/abstract.rb",
+     "lib/hydra/listener/minimal_output.rb",
+     "lib/hydra/listener/report_generator.rb",
      "lib/hydra/master.rb",
      "lib/hydra/message.rb",
      "lib/hydra/message/master_messages.rb",

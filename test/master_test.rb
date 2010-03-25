@@ -21,15 +21,13 @@ class MasterTest < Test::Unit::TestCase
     end
 
     should "generate a report" do
-      Hydra::Master.new(
-        :files => [test_file],
-        :report => true
-      )
+      Hydra::Master.new(:files => [test_file])
       assert File.exists?(target_file)
       assert_equal "HYDRA", File.read(target_file)
-      report_file = File.join(Dir.tmpdir, 'hydra_report.txt')
+      report_file = File.join(Dir.tmpdir, 'hydra_heuristics.yml')
       assert File.exists?(report_file)
-      assert_equal 2, File.read(report_file).split("\n").size
+      assert report = YAML.load_file(report_file)
+      assert_not_nil report[test_file]
     end
 
     should "run a test 6 times on 1 worker with 2 runners" do
@@ -119,19 +117,13 @@ class MasterTest < Test::Unit::TestCase
       # ensure b is on remote
       assert File.exists?(File.join(remote, 'test_b.rb')),  "B should be on remote"
 
-      # fake as if the test got run, so only the sync code is really being tested
-      fake_result = Hydra::Messages::Worker::Results.new(
-        :file => 'test_a.rb', :output => '.'
-      ).serialize.inspect
-
       Hydra::Master.new(
         :files => ['test_a.rb'],
         :workers => [{
           :type => :ssh,
           :connect => 'localhost',
           :directory => remote,
-          :runners => 1,
-          :command => "ruby -e 'puts #{fake_result}' && exit"
+          :runners => 1
         }],
         :sync => {
           :directory => local,
