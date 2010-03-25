@@ -34,6 +34,7 @@ Gem::Specification.new do |s|
      "lib/hydra/listener/abstract.rb",
      "lib/hydra/listener/minimal_output.rb",
      "lib/hydra/listener/notifier.rb",
+     "lib/hydra/listener/progress_bar.rb",
      "lib/hydra/listener/report_generator.rb",
      "lib/hydra/master.rb",
      "lib/hydra/message.rb",

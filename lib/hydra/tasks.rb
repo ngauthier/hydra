@@ -68,7 +68,7 @@ module Hydra #:nodoc:
       @files = []
       @verbose = false
       @autosort = true
-      @listeners = [Hydra::Listener::MinimalOutput.new]
+      @listeners = [Hydra::Listener::ProgressBar.new]
 
       yield self if block_given?
 
