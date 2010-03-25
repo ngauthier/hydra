@@ -10,5 +10,6 @@ require 'hydra/master'
 require 'hydra/listener/abstract'
 require 'hydra/listener/minimal_output'
 require 'hydra/listener/report_generator'
+require 'hydra/listener/notifier'
 
 

@@ -132,6 +132,36 @@ Use ssh_opts to set the port or compression options.
 The *directory* option is the path for the project directory
 where the tests should be run.
 
+=== Using Hydra::Listeners
+
+Hydra comes with a couple of listeners for the events it fires. By
+default, Hydra::Listener::MinimalOutput is used to display the
+files being tests and the ./F/E for each file and F/E output.
+
+It also uses Hydra::Listener::ReportGenerator to generate reports
+of the test files to that it can order them by their run times.
+
+To use another listener, just add a listeners node to the config file.
+For example, if you are on Ubuntu Linux (or have access to the 
+notify-send command) you can add a notifier listener like this:
+
+  listeners:
+    - Hydra::Listener::Notifier.new
+
+Note that if you make a listener node, the default listeners will be
+overridden, so you will no longer have the standard minimal output
+unless you do:
+
+  listeners:
+    - Hydra::Listener::Notifier.new
+    - Hydra::Listener::MinimalOutput.new
+
+Listeners take one argument to their contstructor: an IO object. So,
+you can easily output Hydra to a variety of log files. For example:
+
+  listeners:
+    - Hydra::Listener::ReportGenerator.new(File.new('/home/ngauthier/Desktop/hydra_log.yml', 'w'))
+
 == More Information
 
 For more information on Hydra, check out the rdocs:

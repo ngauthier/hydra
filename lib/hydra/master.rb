@@ -38,6 +38,11 @@ module Hydra #:nodoc:
       @workers = []
       @listeners = []
       @event_listeners = Array(opts.fetch('listeners') { nil } )
+      @event_listeners.select{|l| l.is_a? String}.each do |l|
+        @event_listeners.delete_at(@event_listeners.index(l))
+        listener = eval(l)
+        @event_listeners << listener if listener.is_a?(Hydra::Listener::Abstract)
+      end
       @verbose = opts.fetch('verbose') { false }
       @autosort = opts.fetch('autosort') { true }
       @sync = opts.fetch('sync') { nil }

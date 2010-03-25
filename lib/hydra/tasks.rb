@@ -19,15 +19,17 @@ module Hydra #:nodoc:
     # If not set, it will check 'hydra.yml' and 'config/hydra.yml'
     attr_accessor :config
 
-    # Set to true if you want hydra to generate a report.
-    # Defaults to false
-    attr_accessor :report
-
     # Automatically sort files using their historical runtimes.
     # Defaults to true
     # To disable:
     #   t.autosort = false
     attr_accessor :autosort
+
+    # Event listeners. Defaults to the MinimalOutput listener.
+    # You can add additional listeners if you'd like. For example,
+    # on linux (with notify-send) you can add the notifier listener:
+    #   t.listeners << Hydra::Listener::Notifier.new
+    attr_accessor :listeners
 
     #
     # Search for the hydra config file
