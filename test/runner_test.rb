@@ -18,7 +18,7 @@ class RunnerTest < Test::Unit::TestCase
       # coverage output
       pipe = Hydra::Pipe.new
       parent = Process.fork do
-        request_a_file_and_verify_completion(pipe)
+        request_a_file_and_verify_completion(pipe, test_file)
       end
       run_the_runner(pipe)
       Process.wait(parent)
@@ -31,8 +31,17 @@ class RunnerTest < Test::Unit::TestCase
       child = Process.fork do
         run_the_runner(pipe)
       end
-      request_a_file_and_verify_completion(pipe)
+      request_a_file_and_verify_completion(pipe, test_file)
       Process.wait(child)
+    end
+
+    should "run a cucumber test" do
+      pipe = Hydra::Pipe.new
+      parent = Process.fork do
+        request_a_file_and_verify_completion(pipe, cucumber_feature_file)
+      end
+      run_the_runner(pipe)
+      Process.wait(parent)
     end
 
     should "be able to run a runner over ssh" do
@@ -62,12 +71,12 @@ class RunnerTest < Test::Unit::TestCase
   end
 
   module RunnerTestHelper
-    def request_a_file_and_verify_completion(pipe)
+    def request_a_file_and_verify_completion(pipe, file)
       pipe.identify_as_parent
 
       # make sure it asks for a file, then give it one
       assert pipe.gets.is_a?(Hydra::Messages::Runner::RequestFile)
-      pipe.write(Hydra::Messages::Worker::RunFile.new(:file => test_file))
+      pipe.write(Hydra::Messages::Worker::RunFile.new(:file => file))
       
       # grab its response. This makes us wait for it to finish
       response = pipe.gets

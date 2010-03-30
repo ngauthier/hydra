@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
-  s.date = %q{2010-03-25}
+  s.date = %q{2010-03-30}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
   s.extra_rdoc_files = [
@@ -30,6 +30,7 @@ Gem::Specification.new do |s|
      "hydra.gemspec",
      "hydra_gray.png",
      "lib/hydra.rb",
+     "lib/hydra/cucumber/formatter.rb",
      "lib/hydra/hash.rb",
      "lib/hydra/listener/abstract.rb",
      "lib/hydra/listener/minimal_output.rb",
@@ -52,6 +53,8 @@ Gem::Specification.new do |s|
      "lib/hydra/worker.rb",
      "test/fixtures/assert_true.rb",
      "test/fixtures/config.yml",
+     "test/fixtures/features/step_definitions.rb",
+     "test/fixtures/features/write_file.feature",
      "test/fixtures/hello_world.rb",
      "test/fixtures/slow.rb",
      "test/fixtures/sync_test.rb",
@@ -78,6 +81,7 @@ Gem::Specification.new do |s|
      "test/fixtures/sync_test.rb",
      "test/fixtures/assert_true.rb",
      "test/fixtures/hello_world.rb",
+     "test/fixtures/features/step_definitions.rb",
      "test/master_test.rb",
      "test/worker_test.rb",
      "test/runner_test.rb",
