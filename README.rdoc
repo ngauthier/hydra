@@ -20,12 +20,9 @@ In your rakefile:
   require 'hydra/tasks'
 
   Hydra::TestTask.new('hydra') do |t|
-    # test unit
     t.add_files 'test/unit/**/*_test.rb'
     t.add_files 'test/functional/**/*_test.rb'
     t.add_files 'test/integration/**/*_test.rb'
-    # cucumber
-    t.add_files 'features/**/*.feature'
   end
 
 Run:
@@ -34,6 +31,23 @@ Run:
 
 Hydra defaults to Single Core mode, so you may want to configure it
 to use two (or more) of your cores if you have a multi-processing machine.
+
+== Hydra + Cucumber
+
+Hydra can run cucumber features, but because of cucumber's specialized
+environment, cucumber features have to be run after your other tests.
+
+  Hydra::TestTask.new('hydra') do |t|
+    t.add_files 'test/unit/**/*_test.rb'
+    t.add_files 'test/functional/**/*_test.rb'
+    t.add_files 'test/integration/**/*_test.rb'
+    # cucumber
+    t.autosort = false
+    t.add_files 'features/**/*.feature'
+  end
+
+Hydra's autosort feature sorts files by their runtime, so we
+have to disable it in order to run cucumber features at the end
 
 == Supported frameworks
 
