@@ -1,5 +1,4 @@
-require 'cucumber/formatter/console'
-require 'cucumber/formatter/io'
+require 'cucumber/formatter/progress'
 
 module Cucumber #:nodoc:
   module Formatter #:nodoc:

@@ -5,10 +5,12 @@ class RunnerTest < Test::Unit::TestCase
     setup do
       sleep(0.2)
       FileUtils.rm_f(target_file)
+      FileUtils.rm_f(alternate_target_file)
     end
 
     teardown do
       FileUtils.rm_f(target_file)
+      FileUtils.rm_f(alternate_target_file)
     end
 
 
@@ -35,13 +37,22 @@ class RunnerTest < Test::Unit::TestCase
       Process.wait(child)
     end
 
-    should "run a cucumber test" do
-      pipe = Hydra::Pipe.new
-      parent = Process.fork do
-        request_a_file_and_verify_completion(pipe, cucumber_feature_file)
-      end
-      run_the_runner(pipe)
-      Process.wait(parent)
+    should "run two cucumber tests" do
+      puts "THE FOLLOWING WARNINGS CAN BE IGNORED"
+      puts "It is caused by Cucumber loading all rb files near its features"
+
+      runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
+      runner.run_file(cucumber_feature_file)
+      assert File.exists?(target_file)
+      assert_equal "HYDRA", File.read(target_file)
+      
+      FileUtils.rm_f(target_file)
+      
+      runner.run_file(alternate_cucumber_feature_file)
+      assert File.exists?(alternate_target_file)
+      assert_equal "HYDRA", File.read(alternate_target_file)
+      
+      puts "END IGNORABLE OUTPUT"
     end
 
     should "be able to run a runner over ssh" do
@@ -80,6 +91,7 @@ class RunnerTest < Test::Unit::TestCase
       
       # grab its response. This makes us wait for it to finish
       response = pipe.gets
+      puts response.output
       
       # tell it to shut down
       pipe.write(Hydra::Messages::Worker::Shutdown.new)

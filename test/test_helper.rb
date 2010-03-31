@@ -14,6 +14,10 @@ class Test::Unit::TestCase
   def target_file
     File.expand_path(File.join(Dir.tmpdir, 'hydra_test.txt'))
   end
+  
+  def alternate_target_file
+    File.expand_path(File.join(Dir.tmpdir, 'alternate_hydra_test.txt'))
+  end
 
   def test_file
     File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'write_file.rb'))
@@ -21,6 +25,10 @@ class Test::Unit::TestCase
 
   def cucumber_feature_file
     File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'features', 'write_file.feature'))
+  end
+
+  def alternate_cucumber_feature_file
+    File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'features', 'write_alternate_file.feature'))
   end
 end
 
