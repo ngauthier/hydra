@@ -1,6 +1,7 @@
 require 'hydra/hash'
 require 'open3'
 require 'tmpdir'
+require 'yaml'
 module Hydra #:nodoc:
   # Hydra class responsible for delegate work down to workers.
   #
