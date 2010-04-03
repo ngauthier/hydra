@@ -55,6 +55,13 @@ class RunnerTest < Test::Unit::TestCase
       puts "END IGNORABLE OUTPUT"
     end
 
+    should "run an rspec test" do
+      runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
+      runner.run_file(rspec_file)
+      assert File.exists?(target_file)
+      assert_equal "HYDRA", File.read(target_file)
+    end
+
     should "be able to run a runner over ssh" do
       ssh = Hydra::SSH.new(
         'localhost', 

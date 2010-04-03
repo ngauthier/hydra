@@ -77,7 +77,11 @@ module Hydra #:nodoc:
 
     # Run a ruby file (ending in .rb)
     def run_ruby_file(file)
-      run_test_unit_file(file) + run_rspec_file(file)
+      if file =~ /_spec.rb$/
+        return run_rspec_file(file)
+      else
+        return run_test_unit_file(file)
+      end
     end
 
     # Run all the Test::Unit Suites in a ruby file
@@ -106,11 +110,31 @@ module Hydra #:nodoc:
 
     # run all the Specs in an RSpec file (NOT IMPLEMENTED)
     def run_rspec_file(file)
-      #TODO
-      # Given the file
-      # return "" if all the tests passed
-      # or return the error messages for the entire file
-      return ""
+      # TODO: 
+      # 1. do some of this only once, like the requires and stuff
+      # 2. fork the file loading so that it doesn't get re-run
+      # 3. test that running two files doesn't re-run the first 
+      #    to test 2. above. Like for cucumber
+      # 4. try this on a real rspec project
+      begin
+        require 'spec/autorun'
+      rescue LoadError => ex
+        return ex.to_s
+      end
+      options = Spec::Runner.options
+      require 'spec/runner/formatter/progress_bar_formatter'
+      require 'hydra/spec/hydra_formatter'
+      hydra_output = StringIO.new
+      options.formatters = [Spec::Runner::Formatter::HydraFormatter.new(options.formatter_options, hydra_output)]
+      require file
+      options.run_examples
+      hydra_output.rewind
+      output = hydra_output.read.chomp
+      output = "" if output == "."
+
+      return output
+
+      #return `spec #{File.expand_path(file)}`
     end
 
     # run all the scenarios in a cucumber feature file
