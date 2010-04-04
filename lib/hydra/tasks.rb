@@ -72,6 +72,9 @@ module Hydra #:nodoc:
 
       yield self if block_given?
 
+      # Ensure we override rspec's at_exit
+      require 'hydra/spec/hydra_formatter'
+
       @config = find_config_file
 
       @opts = {
@@ -95,7 +98,6 @@ module Hydra #:nodoc:
       desc "Hydra Tests" + (@name == :hydra ? "" : " for #{@name}")
       task @name do
         Hydra::Master.new(@opts)
-        puts "OK AND QUIT"
         exit(0) #bypass test on_exit output
       end
     end

@@ -103,7 +103,6 @@ module Hydra #:nodoc:
 
     # run all the Specs in an RSpec file (NOT IMPLEMENTED)
     def run_rspec_file(file)
-      puts "RUNNING: #{file}"
       # pull in rspec
       begin
         require 'spec'
@@ -118,12 +117,15 @@ module Hydra #:nodoc:
       pipe = Hydra::Pipe.new
       pid = SafeFork.fork do
         pipe.identify_as_child
-        options = Spec::Runner.options
         hydra_output = StringIO.new
-        options.formatters = [Spec::Runner::Formatter::HydraFormatter.new(options.formatter_options, hydra_output)]
-        require file
-        options.files = [file]
-        options.run_examples
+        Spec::Runner.options.formatters = [
+          Spec::Runner::Formatter::HydraFormatter.new(
+            Spec::Runner.options.formatter_options,
+            hydra_output
+          )
+        ]
+        Spec::Runner.options.files = [file]
+        Spec::Runner.options.run_examples
         hydra_output.rewind
         output = hydra_output.read.chomp
         output = "" if output =~ /^\.*$/
@@ -133,6 +135,7 @@ module Hydra #:nodoc:
       pipe.identify_as_parent
       output_message = pipe.gets
       Process.wait pid
+
       return output_message.output
     end
 
