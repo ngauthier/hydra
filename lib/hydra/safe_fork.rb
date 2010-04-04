@@ -7,7 +7,11 @@ class SafeFork
       child = Process.fork do
         begin
           # create a new connection and perform the action
+          begin
           ActiveRecord::Base.establish_connection if defined?(ActiveRecord)
+          rescue ActiveRecord::AdapterNotSpecified
+            # AR was defined but we didn't have a connection
+          end
           yield
         ensure
           # make sure we remove the connection before we're done
@@ -16,7 +20,11 @@ class SafeFork
       end
     ensure
       # make sure we re-establish the connection before returning to the main instance
+      begin
       ActiveRecord::Base.establish_connection if defined?(ActiveRecord)
+      rescue ActiveRecord::AdapterNotSpecified
+        # AR was defined but we didn't have a connection
+      end
     end
     return child
   end

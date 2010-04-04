@@ -4,6 +4,7 @@ module Spec
   module Runner
     class Options
       attr_accessor :formatters
+      attr_accessor :files
     end
     module Formatter
       class HydraFormatter < ProgressBarFormatter

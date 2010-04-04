@@ -37,6 +37,9 @@ module Hydra #:nodoc:
       class RSpecResult < Hydra::Message
         # the output of the spec
         attr_accessor :output
+        def serialize #:nodoc:
+          super(:output => @output)
+        end
       end
     end
   end

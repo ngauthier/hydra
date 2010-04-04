@@ -103,9 +103,10 @@ module Hydra #:nodoc:
 
     # run all the Specs in an RSpec file (NOT IMPLEMENTED)
     def run_rspec_file(file)
+      puts "RUNNING: #{file}"
       # pull in rspec
       begin
-        require 'spec/autorun'
+        require 'spec'
         require 'hydra/spec/hydra_formatter'
       rescue LoadError => ex
         return ex.to_s
@@ -121,17 +122,18 @@ module Hydra #:nodoc:
         hydra_output = StringIO.new
         options.formatters = [Spec::Runner::Formatter::HydraFormatter.new(options.formatter_options, hydra_output)]
         require file
+        options.files = [file]
         options.run_examples
         hydra_output.rewind
         output = hydra_output.read.chomp
-        output = "" if output == "."
+        output = "" if output =~ /^\.*$/
         pipe.write RSpecResult.new(:output => output)
         pipe.close
       end
       pipe.identify_as_parent
-      output = pipe.gets
+      output_message = pipe.gets
       Process.wait pid
-      return output
+      return output_message.output
     end
 
     # run all the scenarios in a cucumber feature file
