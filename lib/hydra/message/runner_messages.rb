@@ -29,6 +29,15 @@ module Hydra #:nodoc:
           # the connectivity of the IO
         end
       end
+
+      # The runner forks to run rspec messages
+      # so that specs don't get rerun. It uses
+      # this message to report the results. See
+      # Runner::run_rspec_file.
+      class RSpecResult < Hydra::Message
+        # the output of the spec
+        attr_accessor :output
+      end
     end
   end
 end

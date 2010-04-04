@@ -1,3 +1,5 @@
+require 'spec/autorun'
+require 'spec/runner/formatter/progress_bar_formatter'
 module Spec
   module Runner
     class Options

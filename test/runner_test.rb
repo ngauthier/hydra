@@ -37,29 +37,43 @@ class RunnerTest < Test::Unit::TestCase
       Process.wait(child)
     end
 
-    should "run two cucumber tests" do
-      puts "THE FOLLOWING WARNINGS CAN BE IGNORED"
-      puts "It is caused by Cucumber loading all rb files near its features"
-
-      runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
-      runner.run_file(cucumber_feature_file)
-      assert File.exists?(target_file)
-      assert_equal "HYDRA", File.read(target_file)
-      
-      FileUtils.rm_f(target_file)
-      
-      runner.run_file(alternate_cucumber_feature_file)
-      assert File.exists?(alternate_target_file)
-      assert_equal "HYDRA", File.read(alternate_target_file)
-      
-      puts "END IGNORABLE OUTPUT"
-    end
-
-    should "run an rspec test" do
+    should "run two rspec tests" do
       runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
       runner.run_file(rspec_file)
       assert File.exists?(target_file)
       assert_equal "HYDRA", File.read(target_file)
+
+      FileUtils.rm_f(target_file)
+      
+      runner.run_file(alternate_rspec_file)
+      assert File.exists?(alternate_target_file)
+      assert_equal "HYDRA", File.read(alternate_target_file)
+      assert !File.exists?(target_file)
+    end
+
+    should "run two cucumber tests" do
+      # because of all the crap cucumber pulls in
+      # we run this in a fork to not contaminate
+      # the main test environment
+      pid = Process.fork do
+        puts "THE FOLLOWING WARNINGS CAN BE IGNORED"
+        puts "It is caused by Cucumber loading all rb files near its features"
+
+        runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
+        runner.run_file(cucumber_feature_file)
+        assert File.exists?(target_file)
+        assert_equal "HYDRA", File.read(target_file)
+        
+        FileUtils.rm_f(target_file)
+        
+        runner.run_file(alternate_cucumber_feature_file)
+        assert File.exists?(alternate_target_file)
+        assert_equal "HYDRA", File.read(alternate_target_file)
+        assert !File.exists?(target_file)
+        
+        puts "END IGNORABLE OUTPUT"
+      end
+      Process.wait pid
     end
 
     should "be able to run a runner over ssh" do

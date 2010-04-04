@@ -35,10 +35,12 @@ module Hydra #:nodoc:
       trace "Running file: #{file}"
 
       output = ""
-      if file =~ /.rb$/
-        output = run_ruby_file(file)
+      if file =~ /_spec.rb$/
+        output = run_rspec_file(file)
       elsif file =~ /.feature$/
         output = run_cucumber_file(file)
+      else
+        output = run_test_unit_file(file)
       end
 
       output = "." if output == ""
@@ -75,15 +77,6 @@ module Hydra #:nodoc:
       end
     end
 
-    # Run a ruby file (ending in .rb)
-    def run_ruby_file(file)
-      if file =~ /_spec.rb$/
-        return run_rspec_file(file)
-      else
-        return run_test_unit_file(file)
-      end
-    end
-
     # Run all the Test::Unit Suites in a ruby file
     def run_test_unit_file(file)
       begin
@@ -110,31 +103,35 @@ module Hydra #:nodoc:
 
     # run all the Specs in an RSpec file (NOT IMPLEMENTED)
     def run_rspec_file(file)
-      # TODO: 
-      # 1. do some of this only once, like the requires and stuff
-      # 2. fork the file loading so that it doesn't get re-run
-      # 3. test that running two files doesn't re-run the first 
-      #    to test 2. above. Like for cucumber
-      # 4. try this on a real rspec project
+      # pull in rspec
       begin
         require 'spec/autorun'
+        require 'hydra/spec/hydra_formatter'
       rescue LoadError => ex
         return ex.to_s
       end
-      options = Spec::Runner.options
-      require 'spec/runner/formatter/progress_bar_formatter'
-      require 'hydra/spec/hydra_formatter'
-      hydra_output = StringIO.new
-      options.formatters = [Spec::Runner::Formatter::HydraFormatter.new(options.formatter_options, hydra_output)]
-      require file
-      options.run_examples
-      hydra_output.rewind
-      output = hydra_output.read.chomp
-      output = "" if output == "."
-
+      # we have to run the rspec test in a sub-process
+      # this is because rspec runs all the tests that
+      # have been required, so if we kept requiring the
+      # files they'd get run over and over
+      pipe = Hydra::Pipe.new
+      pid = SafeFork.fork do
+        pipe.identify_as_child
+        options = Spec::Runner.options
+        hydra_output = StringIO.new
+        options.formatters = [Spec::Runner::Formatter::HydraFormatter.new(options.formatter_options, hydra_output)]
+        require file
+        options.run_examples
+        hydra_output.rewind
+        output = hydra_output.read.chomp
+        output = "" if output == "."
+        pipe.write RSpecResult.new(:output => output)
+        pipe.close
+      end
+      pipe.identify_as_parent
+      output = pipe.gets
+      Process.wait pid
       return output
-
-      #return `spec #{File.expand_path(file)}`
     end
 
     # run all the scenarios in a cucumber feature file
