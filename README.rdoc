@@ -12,51 +12,15 @@ Hydra's goals are to make distributed testing easy. So as long as
 you can ssh into a computer and run the tests, you can automate
 the distribution with Hydra.
 
-== Usage
+== Usage and Configuration
 
-In your rakefile:
+Check out the wiki for usage and configuration information:
 
-  require 'hydra'
-  require 'hydra/tasks'
+http://wiki.github.com/ngauthier/hydra/
 
-  Hydra::TestTask.new('hydra') do |t|
-    t.add_files 'test/unit/**/*_test.rb'
-    t.add_files 'test/functional/**/*_test.rb'
-    t.add_files 'test/integration/**/*_test.rb'
-  end
+I've tried hard to keep accurate documentation via RDoc as well:
 
-Run:
-
-  $ rake hydra
-
-Hydra defaults to Single Core mode, so you may want to configure it
-to use two (or more) of your cores if you have a multi-processing machine.
-
-== Hydra + Cucumber
-
-Hydra can run cucumber features, but because of cucumber's specialized
-environment, cucumber features have to be run after your other tests or
-as a separate task.
-
-  Hydra::TestTask.new('hydra') do |t|
-    t.add_files 'test/unit/**/*_test.rb'
-    t.add_files 'test/functional/**/*_test.rb'
-    t.add_files 'test/integration/**/*_test.rb'
-    # cucumber
-    t.autosort = false
-    t.add_files 'features/**/*.feature'
-  end
-
-Hydra's autosort feature sorts files by their runtime, so we
-have to disable it in order to run cucumber features at the end
-
-== Hydra + Rspec
-
-Easy peasy!
-
-  Hydra::TestTask.new('hydra') do |t|
-    t.add_files 'spec/**/*_spec.rb'
-  end
+http://rdoc.info/projects/ngauthier/hydra
 
 == Supported frameworks
 
@@ -68,142 +32,6 @@ Right now hydra only supports a few frameworks:
 
 We're working on adding more frameworks, and if you'd like to help, please
 send me a message and I'll show you where to code!
-
-== Running Remote Tasks
-
-You can run tasks across all of your remote workers easily with Hydra. In your rake file, add:
-
-  Hydra::RemoteTask.new('db:reset')
-
-Then you can run:
-
-  rake hydra:remote:db:reset
-
-== Running Global Tasks
-
-A Global task is a task run locally *and* remotely. It's used in the same way as RemoteTask:
-
-  Hydra::GlobalTask.new('db:reset')
-
-But it is invoked in a higher namespace:
-
-  rake hydra:db:reset
-
-== Configuration
-
-Place the config file in the main project directory as
-'hydra.yml' or 'config/hydra.yml'.
-
-=== Examples
-
-==== Dual Core 
-
-  workers:
-    - type: local
-      runners: 2
-
-==== Dual Core, with a remote Quad Core server
-
-The -p3022 tells it to connect on a different port
-
-  workers:
-    - type: local
-      runners: 2
-    - type: ssh
-      connect: user@example.com
-      ssh_opts: -p3022
-      directory: /absolute/path/to/project
-      runners: 4
-
-==== Two Remote Quad Cores with Synchronization
-
-You can use the 'sync' configuration to allow rsync to synchronize
-the local and remote directories every time you run hydra.
-
-  workers:
-    - type: ssh
-      connect: user@alpha.example.com
-      directory: /path/to/project/on/alpha/
-      runners: 4
-    - type: ssh
-      connect: user@beta.example.com
-      directory: /path/to/project/on/beta/
-      runners: 4
-
-  sync:
-      directory: /my/local/project/directory
-      exclude:
-        - tmp
-        - log
-        - doc
-
-=== Workers Options
-
-==== type
-
-Either "local" or "ssh".
-
-==== runners
-
-The *runners* option is how many processes will be running
-on the machine. It's best to pick the same number
-as the number of cores on that machine (as well as your
-own).
-
-=== SSH Options
-
-==== connect
-
-The *connect* option is passed to SSH. So if you've setup an
-ssh config alias to a server, you can use that. It is also
-used in rsync, so you cannot use options.
-
-==== ssh_opts
-
-The *ssh_opts* option is passed to SSH and to Rsync's RSH so
-that you can use the same ssh options for connecting and rsync.
-Use ssh_opts to set the port or compression options.
-
-==== directory
-
-The *directory* option is the path for the project directory
-where the tests should be run.
-
-=== Using Hydra::Listeners
-
-Hydra comes with a couple of listeners for the events it fires. By
-default, Hydra::Listener::MinimalOutput is used to display the
-files being tests and the ./F/E for each file and F/E output.
-
-It also uses Hydra::Listener::ReportGenerator to generate reports
-of the test files to that it can order them by their run times.
-
-To use another listener, just add a listeners node to the config file.
-For example, if you are on Ubuntu Linux (or have access to the 
-notify-send command) you can add a notifier listener like this:
-
-  listeners:
-    - Hydra::Listener::Notifier.new
-
-Note that if you make a listener node, the default listeners will be
-overridden, so you will no longer have the standard minimal output
-unless you do:
-
-  listeners:
-    - Hydra::Listener::Notifier.new
-    - Hydra::Listener::MinimalOutput.new
-
-Listeners take one argument to their contstructor: an IO object. So,
-you can easily output Hydra to a variety of log files. For example:
-
-  listeners:
-    - Hydra::Listener::ReportGenerator.new(File.new('/home/ngauthier/Desktop/hydra_log.yml', 'w'))
-
-== More Information
-
-For more information on Hydra, check out the rdocs:
-
-http://rdoc.info/projects/ngauthier/hydra
 
 == Copyright
 
