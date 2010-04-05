@@ -1,4 +1,4 @@
-= Hѱdra
+= Hydra
 
 Spread your tests over multiple machines to test your code faster.
 
@@ -35,7 +35,8 @@ to use two (or more) of your cores if you have a multi-processing machine.
 == Hydra + Cucumber
 
 Hydra can run cucumber features, but because of cucumber's specialized
-environment, cucumber features have to be run after your other tests.
+environment, cucumber features have to be run after your other tests or
+as a separate task.
 
   Hydra::TestTask.new('hydra') do |t|
     t.add_files 'test/unit/**/*_test.rb'
@@ -49,12 +50,21 @@ environment, cucumber features have to be run after your other tests.
 Hydra's autosort feature sorts files by their runtime, so we
 have to disable it in order to run cucumber features at the end
 
+== Hydra + Rspec
+
+Easy peasy!
+
+  Hydra::TestTask.new('hydra') do |t|
+    t.add_files 'spec/**/*_spec.rb'
+  end
+
 == Supported frameworks
 
 Right now hydra only supports a few frameworks:
 
 * Test::Unit
 * Cucumber
+* RSpec
 
 We're working on adding more frameworks, and if you'd like to help, please
 send me a message and I'll show you where to code!
