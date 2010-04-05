@@ -98,7 +98,7 @@ module Hydra #:nodoc:
       desc "Hydra Tests" + (@name == :hydra ? "" : " for #{@name}")
       task @name do
         Hydra::Master.new(@opts)
-        exit(0) #bypass test on_exit output
+        #exit(0) #bypass test on_exit output
       end
     end
   end

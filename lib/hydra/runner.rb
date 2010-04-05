@@ -110,33 +110,28 @@ module Hydra #:nodoc:
       rescue LoadError => ex
         return ex.to_s
       end
-      # we have to run the rspec test in a sub-process
-      # this is because rspec runs all the tests that
-      # have been required, so if we kept requiring the
-      # files they'd get run over and over
-      pipe = Hydra::Pipe.new
-      pid = SafeFork.fork do
-        pipe.identify_as_child
-        hydra_output = StringIO.new
-        Spec::Runner.options.formatters = [
-          Spec::Runner::Formatter::HydraFormatter.new(
-            Spec::Runner.options.formatter_options,
-            hydra_output
-          )
-        ]
-        Spec::Runner.options.files = [file]
-        Spec::Runner.options.run_examples
-        hydra_output.rewind
-        output = hydra_output.read.chomp
-        output = "" if output =~ /^\.*$/
-        pipe.write RSpecResult.new(:output => output)
-        pipe.close
-      end
-      pipe.identify_as_parent
-      output_message = pipe.gets
-      Process.wait pid
+      hydra_output = StringIO.new
+      Spec::Runner.options.instance_variable_set(:@formatters, [
+        Spec::Runner::Formatter::HydraFormatter.new(
+          Spec::Runner.options.formatter_options,
+          hydra_output
+        )
+      ])
+      Spec::Runner.options.instance_variable_set(
+        :@example_groups, []
+      )
+      Spec::Runner.options.instance_variable_set(
+        :@files, [file]
+      )
+      Spec::Runner.options.instance_variable_set(
+        :@files_loaded, false
+      )
+      Spec::Runner.options.run_examples
+      hydra_output.rewind
+      output = hydra_output.read.chomp
+      output = "" if output =~ /^\.*$/
 
-      return output_message.output
+      return output
     end
 
     # run all the scenarios in a cucumber feature file
