@@ -11,6 +11,8 @@ begin
     gem.homepage = "http://github.com/ngauthier/hydra"
     gem.authors = ["Nick Gauthier"]
     gem.add_development_dependency "shoulda", "= 2.10.3"
+    gem.add_development_dependency "rspec", "= 1.3.0"
+    gem.add_development_dependency "cucumber", "= 0.6.4"
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
