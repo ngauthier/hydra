@@ -73,7 +73,7 @@ module Hydra #:nodoc:
       yield self if block_given?
 
       # Ensure we override rspec's at_exit
-      require 'hydra/spec/hydra_formatter'
+      require 'hydra/spec/autorun_override'
 
       @config = find_config_file
 
