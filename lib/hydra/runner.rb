@@ -131,7 +131,7 @@ module Hydra #:nodoc:
       Spec::Runner.options.run_examples
       hydra_output.rewind
       output = hydra_output.read.chomp
-      output = "" if output =~ /^\.*$/
+      output = "" if output.gsub("\n","") =~ /^\.*$/
 
       return output
     end
