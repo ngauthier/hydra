@@ -1,6 +1,6 @@
 = Hydra
 
-Spread your tests over multiple machines to test your code faster.
+Spread your tests over processors and/or multiple machines to test your code faster.
 
 == Description
 
