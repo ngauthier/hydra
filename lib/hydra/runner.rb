@@ -1,6 +1,15 @@
-require 'test/unit'
-require 'test/unit/testresult'
-Test::Unit.run = true
+require 'minitest/unit'
+require 'test/unit/assertions'
+#require 'test/unit/testresult'
+#Test::Unit.run = true
+module MiniTest
+  class Unit
+    def run(args)
+      puts 'not running!'
+      return 0
+    end
+  end
+end
 
 module Hydra #:nodoc:
   # Hydra class responsible for running test files.
@@ -54,6 +63,10 @@ module Hydra #:nodoc:
       @running = false
     end
 
+    def puke(klass, name, exception)
+      puts "puke! #{klass}, #{name}, #{exception}"
+    end
+
     private
 
     # The runner will continually read messages and handle them.
@@ -77,6 +90,7 @@ module Hydra #:nodoc:
       end
     end
 
+
     # Run all the Test::Unit Suites in a ruby file
     def run_test_unit_file(file)
       begin
@@ -86,14 +100,26 @@ module Hydra #:nodoc:
         return ex.to_s
       end
       output = []
-      @result = Test::Unit::TestResult.new
-      @result.add_listener(Test::Unit::TestResult::FAULT) do |value|
-        output << value
-      end
+#      @result = Test::Unit::TestResult.new
+#      @result.add_listener(Test::Unit::TestResult::FAULT) do |value|
+#        output << value
+#      end
+
 
       klasses = Runner.find_classes_in_file(file)
+      puts "Klasses: #{klasses.inspect}"
       begin
-        klasses.each{|klass| klass.suite.run(@result){|status, name| ;}}
+        klasses.each{|klass| 
+          #klass.suite.run(@result){|status, name| ;}
+          klass.test_suites.each do |suite|
+            suite.test_methods.each do |test|
+              inst = suite.new(test)
+              inst._assertions = 0
+              result = inst.run(self)
+              #puts result
+            end
+          end
+        }
       rescue => ex
         output << ex.to_s
       end
@@ -196,7 +222,11 @@ module Hydra #:nodoc:
           nil
         end
       end
-      return klasses.select{|k| k.respond_to? 'suite'}
+      puts "Pre klasses: #{klasses.inspect}"
+      puts klasses
+
+
+      return klasses.select{|k| k.respond_to? 'test_suites'}
     end
 
     # Yanked a method from Cucumber
