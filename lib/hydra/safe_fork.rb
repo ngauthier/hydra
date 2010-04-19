@@ -8,7 +8,7 @@ class SafeFork
         begin
           # create a new connection and perform the action
           begin
-          ActiveRecord::Base.establish_connection(connection.merge({:allow_concurrency => true})) if defined?(ActiveRecord)
+          ActiveRecord::Base.establish_connection((connection || {}).merge({:allow_concurrency => true})) if defined?(ActiveRecord)
           rescue ActiveRecord::AdapterNotSpecified
             # AR was defined but we didn't have a connection
           end
@@ -21,7 +21,7 @@ class SafeFork
     ensure
       # make sure we re-establish the connection before returning to the main instance
       begin
-        ActiveRecord::Base.establish_connection(connection.merge({:allow_concurrency => true})) if defined?(ActiveRecord)
+        ActiveRecord::Base.establish_connection((connection || {}).merge({:allow_concurrency => true})) if defined?(ActiveRecord)
       rescue ActiveRecord::AdapterNotSpecified
         # AR was defined but we didn't have a connection
       end
