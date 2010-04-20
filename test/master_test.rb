@@ -20,6 +20,17 @@ class MasterTest < Test::Unit::TestCase
       assert_equal "HYDRA", File.read(target_file)
     end
 
+    should "run a spec with pending examples" do
+      progress_bar = Hydra::Listener::ProgressBar.new(StringIO.new)
+      Hydra::Master.new(
+        :files => [rspec_file_with_pending],
+        :listeners => [progress_bar]
+      )
+      assert File.exists?(target_file)
+      assert_equal "HYDRA", File.read(target_file)
+      assert_equal false, progress_bar.instance_variable_get('@errors')
+    end
+
     should "generate a report" do
       Hydra::Master.new(:files => [test_file])
       assert File.exists?(target_file)

@@ -51,6 +51,18 @@ class RunnerTest < Test::Unit::TestCase
       assert !File.exists?(target_file)
     end
 
+    should "run rspec tests with pending examples" do
+      runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
+      assert File.exists?(rspec_file_with_pending)
+
+      runner.run_file(rspec_file_with_pending)
+
+      assert File.exists?(target_file)
+      assert_equal "HYDRA", File.read(target_file)
+
+      FileUtils.rm_f(target_file)
+    end
+
     should "run two cucumber tests" do
       # because of all the crap cucumber pulls in
       # we run this in a fork to not contaminate

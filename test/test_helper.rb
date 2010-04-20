@@ -31,6 +31,10 @@ class Test::Unit::TestCase
     File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'write_file_alternate_spec.rb'))
   end
 
+  def rspec_file_with_pending
+    File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'write_file_with_pending_spec.rb'))
+  end
+
   def cucumber_feature_file
     File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'features', 'write_file.feature'))
   end
