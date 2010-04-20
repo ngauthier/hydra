@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{hydra}
-  s.version = "0.16.4"
+  s.version = "0.16.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
-  s.date = %q{2010-04-19}
+  s.date = %q{2010-04-20}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
   s.extra_rdoc_files = [
@@ -64,6 +64,7 @@ Gem::Specification.new do |s|
      "test/fixtures/write_file.rb",
      "test/fixtures/write_file_alternate_spec.rb",
      "test/fixtures/write_file_spec.rb",
+     "test/fixtures/write_file_with_pending_spec.rb",
      "test/master_test.rb",
      "test/message_test.rb",
      "test/pipe_test.rb",
@@ -87,6 +88,7 @@ Gem::Specification.new do |s|
      "test/fixtures/assert_true.rb",
      "test/fixtures/slow.rb",
      "test/fixtures/write_file_spec.rb",
+     "test/fixtures/write_file_with_pending_spec.rb",
      "test/fixtures/write_file.rb",
      "test/message_test.rb",
      "test/test_helper.rb",
