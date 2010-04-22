@@ -83,13 +83,18 @@ module Hydra #:nodoc:
 
     # Process the results coming back from the worker.
     def process_results(worker, message)
-      @incomplete_files.delete_at(@incomplete_files.index(message.file))
-      trace "#{@incomplete_files.size} Files Remaining"
-      @event_listeners.each{|l| l.file_end(message.file, message.output) }
-      if @incomplete_files.empty?
-        shutdown_all_workers
+      if message.output =~ /ActiveRecord::StatementInvalid(.*)[Dd]eadlock/
+        trace "Deadlock detected running [#{message.file}]. Will retry at the end"
+        @files.push(message.file)
       else
-        send_file(worker)
+        @incomplete_files.delete_at(@incomplete_files.index(message.file))
+        trace "#{@incomplete_files.size} Files Remaining"
+        @event_listeners.each{|l| l.file_end(message.file, message.output) }
+        if @incomplete_files.empty?
+          shutdown_all_workers
+        else
+          send_file(worker)
+        end
       end
     end
 
