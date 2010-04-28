@@ -83,7 +83,9 @@ module Hydra #:nodoc:
 
     # Process the results coming back from the worker.
     def process_results(worker, message)
-      if message.output =~ /ActiveRecord::StatementInvalid(.*)[Dd]eadlock/
+      if message.output =~ /ActiveRecord::StatementInvalid(.*)[Dd]eadlock/ or
+         message.output =~ /PGError: ERROR(.*)[Dd]eadlock/ or
+         message.output =~ /Mysql::Error: SAVEPOINT(.*)does not exist: ROLLBACK/
         trace "Deadlock detected running [#{message.file}]. Will retry at the end"
         @files.push(message.file)
       else
