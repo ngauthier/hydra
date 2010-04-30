@@ -103,6 +103,43 @@ module Hydra #:nodoc:
     end
   end
 
+  # Define a sync task that uses hydra to rsync the source tree under test to remote workers.
+  #
+  # This task is very useful to run before a remote db:reset task to make sure the db/schema.rb
+  # file is up to date on the remote workers.
+  #
+  #   Hydra::SyncTask.new('hydra:sync') do |t|
+  #     t.verbose = false # optionally set to true for lots of debug messages
+  #   end  
+  class SyncTask < Hydra::Task
+
+    # Create a new SyncTestTask
+    def initialize(name = :sync)
+      @name = name
+      @verbose = false
+
+      yield self if block_given?
+
+      @config = find_config_file
+
+      @opts = {
+        :verbose => @verbose
+      }
+      @opts.merge!(:config => @config) if @config
+
+      define
+    end
+
+    private
+    # Create the rake task defined by this HydraSyncTask
+    def define
+      desc "Hydra Tests" + (@name == :hydra ? "" : " for #{@name}")
+      task @name do
+        Hydra::Sync.sync_many(@opts)
+      end
+    end
+  end
+
   # Setup a task that will be run across all remote workers
   #   Hydra::RemoteTask.new('db:reset')
   #
