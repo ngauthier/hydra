@@ -188,7 +188,7 @@ module Hydra #:nodoc:
         end
         @listeners.each{|l| l.join}
         $stdout.write "\n==== Hydra Running #{@name} COMPLETE ====\n\n"
-        $stdout.write @results.values.join('\n')
+        $stdout.write @results.values.join("\n")
       end
     end
 
