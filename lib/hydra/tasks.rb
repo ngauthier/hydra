@@ -165,59 +165,59 @@ module Hydra #:nodoc:
       desc "Run #{@name} remotely on all workers"
       task "hydra:remote:#{@name}" do
         config = YAML.load_file(@config)
-				environment = config.fetch('environment') { 'test' }
+        environment = config.fetch('environment') { 'test' }
         workers = config.fetch('workers') { [] }
         workers = workers.select{|w| w['type'] == 'ssh'}
 
-				$stdout.write "==== Hydra Running #{@name} ====\n"
-				Thread.abort_on_exception = true
-				@listeners = []
-				@results = {}
+        $stdout.write "==== Hydra Running #{@name} ====\n"
+        Thread.abort_on_exception = true
+        @listeners = []
+        @results = {}
         workers.each do |worker|
-					@listeners << Thread.new do
-						begin
-							@results[worker] = if run_task(worker, environment)
-								"==== #{@name} passed on #{worker['connect']} ====\n"
-							else
-								"==== #{@name} failed on #{worker['connect']} ====\nPlease see above for more details.\n"
-							end
-						rescue 
-							@results[worker] = "==== #{@name} failed for #{worker['connect']} ====\n#{$!.inspect}\n#{$!.backtrace.join("\n")}"
-						end
-					end
+          @listeners << Thread.new do
+            begin
+              @results[worker] = if run_task(worker, environment)
+                "==== #{@name} passed on #{worker['connect']} ====\n"
+              else
+                "==== #{@name} failed on #{worker['connect']} ====\nPlease see above for more details.\n"
+              end
+            rescue 
+              @results[worker] = "==== #{@name} failed for #{worker['connect']} ====\n#{$!.inspect}\n#{$!.backtrace.join("\n")}"
+            end
+          end
         end
-				@listeners.each{|l| l.join}
-				$stdout.write "\n==== Hydra Running #{@name} COMPLETE ====\n\n"
-				$stdout.write @results.values.join('\n')
+        @listeners.each{|l| l.join}
+        $stdout.write "\n==== Hydra Running #{@name} COMPLETE ====\n\n"
+        $stdout.write @results.values.join('\n')
       end
     end
 
     def run_task worker, environment
-			$stdout.write "==== Hydra Running #{@name} on #{worker['connect']} ====\n"
-			ssh_opts = worker.fetch('ssh_opts') { '' }
-			writer, reader, error = popen3("ssh -tt #{ssh_opts} #{worker['connect']} ")
-			writer.write("cd #{worker['directory']}\n")
-			writer.write "echo BEGIN HYDRA\n"
-			writer.write("RAILS_ENV=#{environment} rake #{@name}\n")
-			writer.write "echo END HYDRA\n"
-			writer.write("exit\n")
-			writer.close
-			ignoring = true
-			passed = true
-			while line = reader.gets
-				line.chomp!
-				if line =~ /^rake aborted!$/
-					passed = false
-				end
-				if line =~ /echo END HYDRA$/
-					ignoring = true
-				end
-				$stdout.write "#{worker['connect']}: #{line}\n" unless ignoring
-				if line == 'BEGIN HYDRA'
-					ignoring = false
-				end
-			end
-			passed
+      $stdout.write "==== Hydra Running #{@name} on #{worker['connect']} ====\n"
+      ssh_opts = worker.fetch('ssh_opts') { '' }
+      writer, reader, error = popen3("ssh -tt #{ssh_opts} #{worker['connect']} ")
+      writer.write("cd #{worker['directory']}\n")
+      writer.write "echo BEGIN HYDRA\n"
+      writer.write("RAILS_ENV=#{environment} rake #{@name}\n")
+      writer.write "echo END HYDRA\n"
+      writer.write("exit\n")
+      writer.close
+      ignoring = true
+      passed = true
+      while line = reader.gets
+        line.chomp!
+        if line =~ /^rake aborted!$/
+          passed = false
+        end
+        if line =~ /echo END HYDRA$/
+          ignoring = true
+        end
+        $stdout.write "#{worker['connect']}: #{line}\n" unless ignoring
+        if line == 'BEGIN HYDRA'
+          ignoring = false
+        end
+      end
+      passed
     end
   end
 
