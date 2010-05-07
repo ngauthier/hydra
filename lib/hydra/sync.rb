@@ -88,7 +88,6 @@ module Hydra #:nodoc:
             Sync.new worker_opts, @sync, @verbose
           rescue 
             trace "Syncing failed [#{worker_opts.inspect}]"
-            Thread.exit
           end
         end
       end
