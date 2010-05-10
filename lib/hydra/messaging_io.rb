@@ -14,7 +14,7 @@ module Hydra #:nodoc:
       return Message.build(eval(message.chomp))
     rescue SyntaxError, NameError
       # uncomment to help catch remote errors by seeing all traffic
-      $stderr.write "Not a message: [#{message.inspect}]\n"
+      #$stderr.write "Not a message: [#{message.inspect}]\n"
       return gets
     end
 
@@ -26,8 +26,6 @@ module Hydra #:nodoc:
       raise UnprocessableMessage unless message.is_a?(Hydra::Message)
       @writer.write(message.serialize+"\n")
     rescue Errno::EPIPE
-      $stderr.write $!.inspect
-      $stderr.write $!.backtrace.join("\n")
       raise IOError
     end
 
