@@ -29,17 +29,12 @@ module Hydra #:nodoc:
     # * :autosort
     #   * Set to false to disable automatic sorting by historical run-time per file
     def initialize(opts = { })
-      #at_exit do
       trap("SIGINT") do
-        begin
-          puts "Testing halted by user.  Untested files:"
-          puts @incomplete_files.join("\n")
-          #shutdown_all_workers
-        rescue
-          puts $!.inspect
-          puts $!.backtrace.join("\n")
-        end
+        puts "Testing halted by user.  Untested files:"
+        puts @incomplete_files.join("\n")
+        exit
       end 
+
       opts.stringify_keys!
       config_file = opts.delete('config') { nil }
       if config_file
@@ -156,7 +151,7 @@ module Hydra #:nodoc:
 
       trace "Booting SSH worker" 
       ssh = Hydra::SSH.new("#{sync.ssh_opts} #{sync.connect}", sync.remote_dir, command)
-      return { :io => ssh, :idle => false, :type => :ssh }
+      return { :io => ssh, :idle => false, :type => :ssh, :connect => sync.connect }
     end
 
     def shutdown_all_workers
@@ -166,7 +161,6 @@ module Hydra #:nodoc:
         worker[:io].close if worker[:io] 
       end
       @listeners.each{|t| t.exit}
-      trace "Workers shut down"
     end
 
     def process_messages
