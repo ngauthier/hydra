@@ -98,7 +98,81 @@ module Hydra #:nodoc:
       desc "Hydra Tests" + (@name == :hydra ? "" : " for #{@name}")
       task @name do
         Hydra::Master.new(@opts)
-        #exit(0) #bypass test on_exit output
+      end
+    end
+  end
+
+  # Define a test task that uses hydra to profile your test files
+  #
+  #  Hydra::ProfileTask.new('hydra:prof') do |t|
+  #    t.add_files 'test/unit/**/*_test.rb'
+  #    t.add_files 'test/functional/**/*_test.rb'
+  #    t.add_files 'test/integration/**/*_test.rb'
+  #    t.generate_html = true # defaults to false
+  #    t.generate_text = true # defaults to true
+  #  end
+  class ProfileTask < Hydra::Task
+    # boolean: generate html output from ruby-prof
+    attr_accessor :generate_html
+    # boolean: generate text output from ruby-prof
+    attr_accessor :generate_text
+
+    # Create a new Hydra ProfileTask
+    def initialize(name = 'hydra:profile')
+      @name = name
+      @files = []
+      @verbose = false
+      @generate_html = false
+      @generate_text = true
+
+      yield self if block_given?
+
+      # Ensure we override rspec's at_exit
+      require 'hydra/spec/autorun_override'
+
+      @config = find_config_file
+
+      @opts = {
+        :verbose => @verbose,
+        :files => @files
+      }
+      define
+    end
+
+    private
+    # Create the rake task defined by this HydraTestTask
+    def define
+      desc "Hydra Test Profile" + (@name == :hydra ? "" : " for #{@name}")
+      task @name do
+        require 'ruby-prof'
+        RubyProf.start
+
+        runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
+        @files.each do |file|
+          $stdout.write runner.run_file(file)
+          $stdout.flush
+        end
+
+        $stdout.write "\nTests complete. Generating profiling output\n"
+        $stdout.flush
+
+        result = RubyProf.stop
+
+        if @generate_html
+          printer = RubyProf::GraphHtmlPrinter.new(result)
+          out = File.new("ruby-prof.html", 'w')
+          printer.print(out, :min_self => 0.05)
+          out.close
+          $stdout.write "Profiling data written to [ruby-prof.html]\n"
+        end
+
+        if @generate_text
+          printer = RubyProf::FlatPrinter.new(result)
+          out = File.new("ruby-prof.txt", 'w')
+          printer.print(out, :min_self => 0.05)
+          out.close
+          $stdout.write "Profiling data written to [ruby-prof.txt]\n"
+        end
       end
     end
   end
