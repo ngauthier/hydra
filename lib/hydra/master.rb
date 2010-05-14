@@ -3,10 +3,13 @@ require 'open3'
 require 'tmpdir'
 require 'erb'
 require 'yaml'
+
 module Hydra #:nodoc:
   # Hydra class responsible for delegate work down to workers.
   #
   # The Master is run once for any given testing session.
+  class YmlLoadError < StandardError; end
+  
   class Master
     include Hydra::Messages::Master
     include Open3
