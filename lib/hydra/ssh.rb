@@ -27,6 +27,7 @@ module Hydra #:nodoc:
     # list all the files.
     def initialize(connection_options, directory, command)
       @writer, @reader, @error = popen3("ssh -tt #{connection_options}")
+      @writer.write("mkdir -p #{directory}\n")
       @writer.write("cd #{directory}\n")
       @writer.write(command+"\n")
     end
