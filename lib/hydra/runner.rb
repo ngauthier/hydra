@@ -39,6 +39,8 @@ module Hydra #:nodoc:
         output = run_rspec_file(file)
       elsif file =~ /.feature$/
         output = run_cucumber_file(file)
+      elsif file =~ /.js$/
+        output = run_javascript_file(file)
       else
         output = run_test_unit_file(file)
       end
@@ -173,6 +175,48 @@ module Hydra #:nodoc:
 
       hydra_response.rewind
       return hydra_response.read
+    end
+
+    def run_javascript_file(file)
+      puts "Running #{file}"
+      errors = []
+      require 'v8'
+      require 'pp' #TODO REMOVE!
+      V8::Context.open do |context|
+        context.load(File.expand_path(File.join(File.dirname(__FILE__), 'js', 'lint.js')))
+        context['input'] = lambda{
+          File.read(file)
+        }
+        context['reportErrors'] = lambda{|js_errors|
+          js_errors.each do |e|
+            e = V8::To.ruby(e)
+            errors << "Error at line #{e['line'].to_i + 1} " + 
+              "character #{e['character'].to_i + 1}: #{e['reason']}"
+            errors << e['evidence']
+          end
+        }
+        context.eval %{
+          JSLINT(input(), {
+            sub: true,
+            onevar: true,
+            eqeqeq: true,
+            plusplus: true,
+            bitwise: true,
+            regexp: true,
+            newcap: true,
+            immed: true,
+            strict: true,
+            rhino: true
+          });
+          reportErrors(JSLINT.errors);
+        }
+      end
+
+      if errors.empty?
+        return '.'
+      else
+        return errors.join("\n")
+      end
     end
 
     # find all the test unit classes in a given file, so we can run their suites

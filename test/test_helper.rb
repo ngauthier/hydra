@@ -42,6 +42,10 @@ class Test::Unit::TestCase
   def alternate_cucumber_feature_file
     File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'features', 'write_alternate_file.feature'))
   end
+
+  def javascript_file
+    File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'js_file.js'))
+  end
 end
 
 module Hydra #:nodoc:

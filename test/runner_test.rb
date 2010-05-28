@@ -37,6 +37,12 @@ class RunnerTest < Test::Unit::TestCase
       Process.wait(child)
     end
 
+    should "run a js lint file and find errors" do
+      runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
+      results = runner.run_file(javascript_file)
+      assert results =~ /Missing semicolon/
+    end
+
     should "run two rspec tests" do
       runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
       runner.run_file(rspec_file)
