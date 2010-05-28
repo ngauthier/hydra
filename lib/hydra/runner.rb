@@ -35,11 +35,11 @@ module Hydra #:nodoc:
       trace "Running file: #{file}"
 
       output = ""
-      if file =~ /_spec.rb$/
+      if file =~ /_spec.rb$/i
         output = run_rspec_file(file)
-      elsif file =~ /.feature$/
+      elsif file =~ /.feature$/i
         output = run_cucumber_file(file)
-      elsif file =~ /.js$/
+      elsif file =~ /.js$/i or file =~ /.json$/i
         output = run_javascript_file(file)
       else
         output = run_test_unit_file(file)

@@ -46,6 +46,10 @@ class Test::Unit::TestCase
   def javascript_file
     File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'js_file.js'))
   end
+
+  def json_file
+    File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'json_data.json'))
+  end
 end
 
 module Hydra #:nodoc:

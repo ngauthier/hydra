@@ -43,6 +43,12 @@ class RunnerTest < Test::Unit::TestCase
       assert results =~ /Missing semicolon/
     end
 
+    should "run a json data file and find errors" do
+      runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
+      results = runner.run_file(json_file)
+      assert results =~ /trailing comma/
+    end
+
     should "run two rspec tests" do
       runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
       runner.run_file(rspec_file)
