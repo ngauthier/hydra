@@ -178,10 +178,8 @@ module Hydra #:nodoc:
     end
 
     def run_javascript_file(file)
-      puts "Running #{file}"
       errors = []
       require 'v8'
-      require 'pp' #TODO REMOVE!
       V8::Context.open do |context|
         context.load(File.expand_path(File.join(File.dirname(__FILE__), 'js', 'lint.js')))
         context['input'] = lambda{
@@ -190,9 +188,10 @@ module Hydra #:nodoc:
         context['reportErrors'] = lambda{|js_errors|
           js_errors.each do |e|
             e = V8::To.ruby(e)
-            errors << "Error at line #{e['line'].to_i + 1} " + 
-              "character #{e['character'].to_i + 1}: #{e['reason']}"
-            errors << e['evidence']
+            errors << "\n\e[1;31mJSLINT: #{file}\e[0m"
+            errors << "  Error at line #{e['line'].to_i + 1} " + 
+              "character #{e['character'].to_i + 1}: \e[1;33m#{e['reason']}\e[0m"
+            errors << "#{e['evidence']}"
           end
         }
         context.eval %{
