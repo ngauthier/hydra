@@ -14,6 +14,7 @@ module Hydra #:nodoc:
     include Hydra::Messages::Master
     include Open3
     traceable('MASTER')
+
     # Create a new Master
     #
     # Options:
@@ -32,6 +33,12 @@ module Hydra #:nodoc:
     # * :autosort
     #   * Set to false to disable automatic sorting by historical run-time per file
     def initialize(opts = { })
+      trap("SIGINT") do
+        puts "Testing halted by user.  Untested files:"
+        puts @incomplete_files.join("\n")
+        exit
+      end 
+
       opts.stringify_keys!
       config_file = opts.delete('config') { nil }
       if config_file
@@ -64,6 +71,7 @@ module Hydra #:nodoc:
       @verbose = opts.fetch('verbose') { false }
       @autosort = opts.fetch('autosort') { true }
       @sync = opts.fetch('sync') { nil }
+      @environment = opts.fetch('environment') { 'test' }
 
       if @autosort
         sort_files_from_report 
@@ -151,39 +159,16 @@ module Hydra #:nodoc:
     end
 
     def boot_ssh_worker(worker)
+      sync = Sync.new(worker, @sync, @verbose)
+
       runners = worker.fetch('runners') { raise "You must specify the number of runners"  }
-      connect = worker.fetch('connect') { raise "You must specify an SSH connection target" }
-      ssh_opts = worker.fetch('ssh_opts') { "" }
-      directory = worker.fetch('directory') { raise "You must specify a remote directory" }
       command = worker.fetch('command') { 
-        "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Worker.new(:io => Hydra::Stdio.new, :runners => #{runners}, :verbose => #{@verbose});\""
+        "RAILS_ENV=#{@environment} ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Worker.new(:io => Hydra::Stdio.new, :runners => #{runners}, :verbose => #{@verbose});\""
       }
 
-      if @sync
-        @sync.stringify_keys!
-        trace "Synchronizing with #{connect}\n\t#{@sync.inspect}"
-        local_dir = @sync.fetch('directory') { 
-          raise "You must specify a synchronization directory"
-        }
-        exclude_paths = @sync.fetch('exclude') { [] }
-        exclude_opts = exclude_paths.inject(''){|memo, path| memo += "--exclude=#{path} "}
-
-        rsync_command = [
-          'rsync',
-          '-avz',
-          '--delete',
-          exclude_opts,
-          File.expand_path(local_dir)+'/',
-          "-e \"ssh #{ssh_opts}\"",
-          "#{connect}:#{directory}"
-        ].join(" ")
-        trace rsync_command
-        trace `#{rsync_command}`
-      end
-
       trace "Booting SSH worker" 
-      ssh = Hydra::SSH.new("#{ssh_opts} #{connect}", directory, command)
-      return { :io => ssh, :idle => false, :type => :ssh }
+      ssh = Hydra::SSH.new("#{sync.ssh_opts} #{sync.connect}", sync.remote_dir, command)
+      return { :io => ssh, :idle => false, :type => :ssh, :connect => sync.connect }
     end
 
     def shutdown_all_workers

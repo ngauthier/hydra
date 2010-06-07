@@ -51,6 +51,7 @@ Gem::Specification.new do |s|
      "lib/hydra/spec/hydra_formatter.rb",
      "lib/hydra/ssh.rb",
      "lib/hydra/stdio.rb",
+     "lib/hydra/sync.rb",
      "lib/hydra/tasks.rb",
      "lib/hydra/trace.rb",
      "lib/hydra/worker.rb",
@@ -73,6 +74,7 @@ Gem::Specification.new do |s|
      "test/pipe_test.rb",
      "test/runner_test.rb",
      "test/ssh_test.rb",
+     "test/sync_test.rb",
      "test/test_helper.rb",
      "test/worker_test.rb"
   ]
@@ -97,6 +99,7 @@ Gem::Specification.new do |s|
      "test/test_helper.rb",
      "test/master_test.rb",
      "test/runner_test.rb",
+     "test/sync_test.rb",
      "test/worker_test.rb"
   ]
 

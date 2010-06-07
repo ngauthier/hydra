@@ -177,6 +177,43 @@ module Hydra #:nodoc:
     end
   end
 
+  # Define a sync task that uses hydra to rsync the source tree under test to remote workers.
+  #
+  # This task is very useful to run before a remote db:reset task to make sure the db/schema.rb
+  # file is up to date on the remote workers.
+  #
+  #   Hydra::SyncTask.new('hydra:sync') do |t|
+  #     t.verbose = false # optionally set to true for lots of debug messages
+  #   end  
+  class SyncTask < Hydra::Task
+
+    # Create a new SyncTestTask
+    def initialize(name = :sync)
+      @name = name
+      @verbose = false
+
+      yield self if block_given?
+
+      @config = find_config_file
+
+      @opts = {
+        :verbose => @verbose
+      }
+      @opts.merge!(:config => @config) if @config
+
+      define
+    end
+
+    private
+    # Create the rake task defined by this HydraSyncTask
+    def define
+      desc "Hydra Tests" + (@name == :hydra ? "" : " for #{@name}")
+      task @name do
+        Hydra::Sync.sync_many(@opts)
+      end
+    end
+  end
+
   # Setup a task that will be run across all remote workers
   #   Hydra::RemoteTask.new('db:reset')
   #
@@ -202,32 +239,59 @@ module Hydra #:nodoc:
       desc "Run #{@name} remotely on all workers"
       task "hydra:remote:#{@name}" do
         config = YAML.load_file(@config)
+        environment = config.fetch('environment') { 'test' }
         workers = config.fetch('workers') { [] }
         workers = workers.select{|w| w['type'] == 'ssh'}
+
+        $stdout.write "==== Hydra Running #{@name} ====\n"
+        Thread.abort_on_exception = true
+        @listeners = []
+        @results = {}
         workers.each do |worker|
-          $stdout.write "==== Hydra Running #{@name} on #{worker['connect']} ====\n"
-          ssh_opts = worker.fetch('ssh_opts') { '' }
-          writer, reader, error = popen3("ssh -tt #{ssh_opts} #{worker['connect']} ")
-          writer.write("cd #{worker['directory']}\n")
-          writer.write "echo BEGIN HYDRA\n"
-          writer.write("RAILS_ENV=test rake #{@name}\n")
-          writer.write "echo END HYDRA\n"
-          writer.write("exit\n")
-          writer.close
-          ignoring = true
-          while line = reader.gets
-            line.chomp!
-            if line =~ /echo END HYDRA$/
-              ignoring = true
-            end
-            $stdout.write "#{line}\n" unless ignoring
-            if line == 'BEGIN HYDRA'
-              ignoring = false
+          @listeners << Thread.new do
+            begin
+              @results[worker] = if run_task(worker, environment)
+                "==== #{@name} passed on #{worker['connect']} ====\n"
+              else
+                "==== #{@name} failed on #{worker['connect']} ====\nPlease see above for more details.\n"
+              end
+            rescue 
+              @results[worker] = "==== #{@name} failed for #{worker['connect']} ====\n#{$!.inspect}\n#{$!.backtrace.join("\n")}"
             end
           end
-          $stdout.write "\n==== Hydra Running #{@name} COMPLETE ====\n\n"
+        end
+        @listeners.each{|l| l.join}
+        $stdout.write "\n==== Hydra Running #{@name} COMPLETE ====\n\n"
+        $stdout.write @results.values.join("\n")
+      end
+    end
+
+    def run_task worker, environment
+      $stdout.write "==== Hydra Running #{@name} on #{worker['connect']} ====\n"
+      ssh_opts = worker.fetch('ssh_opts') { '' }
+      writer, reader, error = popen3("ssh -tt #{ssh_opts} #{worker['connect']} ")
+      writer.write("cd #{worker['directory']}\n")
+      writer.write "echo BEGIN HYDRA\n"
+      writer.write("RAILS_ENV=#{environment} rake #{@name}\n")
+      writer.write "echo END HYDRA\n"
+      writer.write("exit\n")
+      writer.close
+      ignoring = true
+      passed = true
+      while line = reader.gets
+        line.chomp!
+        if line =~ /^rake aborted!$/
+          passed = false
+        end
+        if line =~ /echo END HYDRA$/
+          ignoring = true
+        end
+        $stdout.write "#{worker['connect']}: #{line}\n" unless ignoring
+        if line == 'BEGIN HYDRA'
+          ignoring = false
         end
       end
+      passed
     end
   end
 
