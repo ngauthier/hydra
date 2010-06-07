@@ -40,7 +40,7 @@ module Hydra #:nodoc:
       return @config if File.exists?(@config)
       @config = nil
     end
-    
+
     # Add files to test by passing in a string to be run through Dir.glob.
     # For example:
     #
@@ -59,7 +59,7 @@ module Hydra #:nodoc:
   #     t.add_files 'test/integration/**/*_test.rb'
   #     t.verbose = false # optionally set to true for lots of debug messages
   #     t.autosort = false # disable automatic sorting based on runtime of tests
-  #   end  
+  #   end
   class TestTask < Hydra::Task
 
     # Create a new HydraTestTask
@@ -71,6 +71,12 @@ module Hydra #:nodoc:
       @listeners = [Hydra::Listener::ProgressBar.new]
 
       yield self if block_given?
+
+      if Object.const_defined?('RAILS_ENV') && RAILS_ENV == 'development'
+        $stderr.puts <<-MSG
+WARNING: RAILS_ENV is "development". Make sure to set it properly (ex: "RAILS_ENV=test rake hydra")
+        MSG
+      end
 
       # Ensure we override rspec's at_exit
       require 'hydra/spec/autorun_override'
@@ -302,7 +308,7 @@ module Hydra #:nodoc:
   #   Hydra::GlobalTask.new('db:reset')
   #
   # Allows you to run:
-  #   
+  #
   #   rake hydra:db:reset
   #
   # Then, db:reset will be run locally and on all remote workers. This
@@ -324,7 +330,7 @@ module Hydra #:nodoc:
     def define
       Hydra::RemoteTask.new(@name)
       desc "Run #{@name.to_s} Locally and Remotely across all Workers"
-      task "hydra:#{@name.to_s}" => [@name.to_s, "hydra:remote:#{@name.to_s}"] 
+      task "hydra:#{@name.to_s}" => [@name.to_s, "hydra:remote:#{@name.to_s}"]
     end
   end
 end
