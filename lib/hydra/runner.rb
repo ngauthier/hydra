@@ -180,7 +180,7 @@ module Hydra #:nodoc:
     def run_javascript_file(file)
       errors = []
       require 'v8'
-      V8::Context.open do |context|
+      V8::Context.new do |context|
         context.load(File.expand_path(File.join(File.dirname(__FILE__), 'js', 'lint.js')))
         context['input'] = lambda{
           File.read(file)
