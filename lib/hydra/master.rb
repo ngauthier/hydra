@@ -1,11 +1,15 @@
 require 'hydra/hash'
 require 'open3'
 require 'tmpdir'
+require 'erb'
 require 'yaml'
+
 module Hydra #:nodoc:
   # Hydra class responsible for delegate work down to workers.
   #
   # The Master is run once for any given testing session.
+  class YmlLoadError < StandardError; end
+  
   class Master
     include Hydra::Messages::Master
     include Open3
@@ -31,7 +35,20 @@ module Hydra #:nodoc:
       opts.stringify_keys!
       config_file = opts.delete('config') { nil }
       if config_file
-        opts.merge!(YAML.load_file(config_file).stringify_keys!)
+
+        begin
+          config_erb = ERB.new(IO.read(config_file)).result(binding)
+        rescue Exception => e
+          raise(YmlLoadError,"config file was found, but could not be parsed with ERB.\n#{$!.inspect}")
+        end
+
+        begin
+          config_yml = YAML::load(config_erb)
+        rescue StandardError => e
+          raise(YmlLoadError,"config file was found, but could not be parsed.\n#{$!.inspect}")
+        end
+        
+        opts.merge!(config_yml.stringify_keys!)
       end
       @files = Array(opts.fetch('files') { nil })
       raise "No files, nothing to do" if @files.empty?
