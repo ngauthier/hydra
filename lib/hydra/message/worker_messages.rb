@@ -8,6 +8,12 @@ module Hydra #:nodoc:
         end
       end
 
+      class WorkerBegin < Hydra::Message
+        def handle(master, worker)
+          master.worker_begin(worker)
+        end
+      end
+
       # Message telling the Runner to run a file
       class RunFile < Hydra::Message
         # The file that should be run

@@ -9,6 +9,8 @@ module Hydra #:nodoc:
   class Worker
     include Hydra::Messages::Worker
     traceable('WORKER')
+
+    attr_reader :runners
     # Create a new worker.
     # * io: The IO object to use to communicate with the master
     # * num_runners: The number of runners to launch
@@ -19,14 +21,16 @@ module Hydra #:nodoc:
       @listeners = []
 
       boot_runners(opts.fetch(:runners) { 1 })
+      @io.write(Hydra::Messages::Worker::WorkerBegin.new)
+
       process_messages
-      
+
       @runners.each{|r| Process.wait r[:pid] }
     end
 
 
     # message handling methods
-    
+
     # When a runner wants a file, it hits this method with a message.
     # Then the worker bubbles the file request up to the master.
     def request_file(message, runner)
@@ -99,7 +103,7 @@ module Hydra #:nodoc:
           begin
             message = @io.gets
             if message and !message.class.to_s.index("Master").nil?
-              trace "Received Message from Master" 
+              trace "Received Message from Master"
               trace "\t#{message.inspect}"
               message.handle(self)
             else
