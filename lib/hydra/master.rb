@@ -114,6 +114,7 @@ module Hydra #:nodoc:
          message.output =~ /Mysql::Error: Deadlock found/
         trace "Deadlock detected running [#{message.file}]. Will retry at the end"
         @files.push(message.file)
+        send_file(worker)
       else
         @incomplete_files.delete_at(@incomplete_files.index(message.file))
         trace "#{@incomplete_files.size} Files Remaining"
