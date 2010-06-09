@@ -1,6 +1,6 @@
 require 'hydra/hash'
 require 'open3'
-require 'tmpdir'
+require 'hydra/tmpdir'
 require 'erb'
 require 'yaml'
 
@@ -238,7 +238,7 @@ module Hydra #:nodoc:
     end
 
     def heuristic_file
-      @heuristic_file ||= File.join(Dir.tmpdir, 'hydra_heuristics.yml')
+      @heuristic_file ||= File.join(Dir.consistent_tmpdir, 'hydra_heuristics.yml')
     end
   end
 end
