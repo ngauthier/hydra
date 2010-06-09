@@ -20,6 +20,7 @@ module Hydra #:nodoc:
       @runners = []
       @listeners = []
 
+      load_worker_initializer
       boot_runners(opts.fetch(:runners) { 1 })
       @io.write(Hydra::Messages::Worker::WorkerBegin.new)
 
@@ -28,7 +29,15 @@ module Hydra #:nodoc:
       @runners.each{|r| Process.wait r[:pid] }
     end
 
-
+    def load_worker_initializer
+      if File.exist?('./hydra_worker_init.rb')
+        trace('Requiring hydra_worker_init.rb')
+        require 'hydra_worker_init'
+      else
+        trace('hydra_worker_init.rb not present')
+      end
+    end
+    
     # message handling methods
 
     # When a runner wants a file, it hits this method with a message.
