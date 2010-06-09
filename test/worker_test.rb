@@ -41,8 +41,10 @@ class WorkerTest < Test::Unit::TestCase
 
     def request_a_file_and_verify_completion(pipe, num_runners)
       pipe.identify_as_parent
+      pipe.gets # grab the WorkerBegin
       num_runners.times do
-        assert pipe.gets.is_a?(Hydra::Messages::Worker::RequestFile)
+        response = pipe.gets # grab the RequestFile
+        assert response.is_a?(Hydra::Messages::Worker::RequestFile), "Expected RequestFile but got #{response.class.to_s}"
       end
       pipe.write(Hydra::Messages::Master::RunFile.new(:file => test_file))
 
