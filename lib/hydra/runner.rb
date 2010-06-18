@@ -187,7 +187,7 @@ module Hydra #:nodoc:
         }
         context['reportErrors'] = lambda{|js_errors|
           js_errors.each do |e|
-            e = V8::To.ruby(e)
+            e = V8::To.rb(e)
             errors << "\n\e[1;31mJSLINT: #{file}\e[0m"
             errors << "  Error at line #{e['line'].to_i + 1} " + 
               "character #{e['character'].to_i + 1}: \e[1;33m#{e['reason']}\e[0m"

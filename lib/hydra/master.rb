@@ -33,12 +33,6 @@ module Hydra #:nodoc:
     # * :autosort
     #   * Set to false to disable automatic sorting by historical run-time per file
     def initialize(opts = { })
-      trap("SIGINT") do
-        puts "Testing halted by user.  Untested files:"
-        puts @incomplete_files.join("\n")
-        exit
-      end
-
       opts.stringify_keys!
       config_file = opts.delete('config') { nil }
       if config_file
