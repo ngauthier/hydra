@@ -31,6 +31,11 @@ module Hydra #:nodoc:
     #   t.listeners << Hydra::Listener::Notifier.new
     attr_accessor :listeners
 
+    # Set to true if you want to run this task only on the local
+    # machine with one runner. A "Safe Mode" for some test
+    # files that may not play nice with others.
+    attr_accessor :serial
+
     #
     # Search for the hydra config file
     def find_config_file
@@ -68,20 +73,17 @@ module Hydra #:nodoc:
       @files = []
       @verbose = false
       @autosort = true
+      @serial = false
       @listeners = [Hydra::Listener::ProgressBar.new]
 
       yield self if block_given?
 
-      if Object.const_defined?('RAILS_ENV') && RAILS_ENV == 'development'
-        $stderr.puts <<-MSG
-WARNING: RAILS_ENV is "development". Make sure to set it properly (ex: "RAILS_ENV=test rake hydra")
-        MSG
-      end
-
       # Ensure we override rspec's at_exit
       require 'hydra/spec/autorun_override'
 
-      @config = find_config_file
+      unless @serial
+        @config = find_config_file
+      end
 
       @opts = {
         :verbose => @verbose,
@@ -103,6 +105,10 @@ WARNING: RAILS_ENV is "development". Make sure to set it properly (ex: "RAILS_EN
     def define
       desc "Hydra Tests" + (@name == :hydra ? "" : " for #{@name}")
       task @name do
+        if Object.const_defined?('RAILS_ENV') && RAILS_ENV == 'development'
+          $stderr.puts %{WARNING: RAILS_ENV is "development". Make sure to set it properly (ex: "RAILS_ENV=test rake hydra")}
+        end
+
         Hydra::Master.new(@opts)
       end
     end
