@@ -34,7 +34,7 @@ module Hydra #:nodoc:
         complete = ((@files_completed.to_f / @total_files.to_f) * width).to_i
         @output.write "\r" # move to beginning
         @output.write 'Hydra Testing ['
-        @output.write @errors ? "\033[1;31m" : "\033[1;32m"
+        @output.write @errors ? "\033[0;31m" : "\033[0;32m"
         complete.times{@output.write '#'}
         @output.write '>'
         (width-complete).times{@output.write ' '}
