@@ -19,7 +19,6 @@ module Cucumber #:nodoc:
         print_steps(:failed)
         print_snippets(@options)
         print_passing_wip(@options)
-        print_tag_limit_warnings(features)
       end
 
       # Removed all progress output
