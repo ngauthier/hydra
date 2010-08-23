@@ -50,6 +50,7 @@ class RunnerTest < Test::Unit::TestCase
     end
 
     should "run two rspec tests" do
+      puts "First test"
       runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
       runner.run_file(rspec_file)
       assert File.exists?(target_file)
@@ -60,7 +61,7 @@ class RunnerTest < Test::Unit::TestCase
       runner.run_file(alternate_rspec_file)
       assert File.exists?(alternate_target_file)
       assert_equal "HYDRA", File.read(alternate_target_file)
-      assert !File.exists?(target_file)
+      assert !File.exists?(target_file), "Tests are double running!"
     end
 
     should "run rspec tests with pending examples" do
