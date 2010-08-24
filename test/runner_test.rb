@@ -50,7 +50,6 @@ class RunnerTest < Test::Unit::TestCase
     end
 
     should "run two rspec tests" do
-      puts "First test"
       runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
       runner.run_file(rspec_file)
       assert File.exists?(target_file)
@@ -81,8 +80,8 @@ class RunnerTest < Test::Unit::TestCase
       # we run this in a fork to not contaminate
       # the main test environment
       pid = Process.fork do
-        puts "THE FOLLOWING WARNINGS CAN BE IGNORED"
-        puts "It is caused by Cucumber loading all rb files near its features"
+        # need to get into the fixtures directory so cucumber doesn't load up the whole project
+        Dir.chdir(File.join(File.dirname(__FILE__), 'fixtures'))
 
         runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
         runner.run_file(cucumber_feature_file)
@@ -95,8 +94,6 @@ class RunnerTest < Test::Unit::TestCase
         assert File.exists?(alternate_target_file)
         assert_equal "HYDRA", File.read(alternate_target_file)
         assert !File.exists?(target_file)
-        
-        puts "END IGNORABLE OUTPUT"
       end
       Process.wait pid
     end
@@ -137,7 +134,6 @@ class RunnerTest < Test::Unit::TestCase
       
       # grab its response. This makes us wait for it to finish
       response = pipe.gets
-      puts response.output
       
       # tell it to shut down
       pipe.write(Hydra::Messages::Worker::Shutdown.new)
