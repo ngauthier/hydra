@@ -1,4 +1,18 @@
 #!/usr/bin/env ruby
+#
+# warmsnake.rb
+#
+# This is a first attempt at making a hydra binary.
+#
+# Currently, all it does is run the files you pass into it. When you
+# press Enter it will run them again, maintaining your rails environment.
+# When you type 'r' and hit Enter it will reboot the rails environment.
+#
+# It is extremely specific about its behavior and only works in rails.
+#
+# It is not really ready for any kind of release, but it is useful, so
+# it's included.
+#
 require 'rubygems'
 require 'hydra'
 
