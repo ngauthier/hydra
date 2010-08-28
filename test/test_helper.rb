@@ -50,6 +50,10 @@ class Test::Unit::TestCase
   def json_file
     File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'json_data.json'))
   end
+
+  def conflicting_test_file
+    File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'conflicting.rb'))
+  end
 end
 
 module Hydra #:nodoc:

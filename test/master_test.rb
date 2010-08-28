@@ -20,6 +20,20 @@ class MasterTest < Test::Unit::TestCase
       assert_equal "HYDRA", File.read(target_file)
     end
 
+    # this test simulates what happens when we have 2 tests with the same
+    # class name but with different parent classes.  This can happen when 
+    # we have a functional and an integration test class with the same name.
+    should "run even with a test that is invalidwill not require" do
+      sync_test = File.join(File.dirname(__FILE__), 'fixtures', 'sync_test.rb')
+      Hydra::Master.new(
+        # we want the actual test to run last to make sure the runner can still run tests
+        :files => [sync_test, conflicting_test_file, test_file],
+        :autosort => false
+      )
+      assert File.exists?(target_file)
+      assert_equal "HYDRA", File.read(target_file)
+    end
+
     should "run a spec with pending examples" do
       progress_bar = Hydra::Listener::ProgressBar.new(StringIO.new)
       Hydra::Master.new(

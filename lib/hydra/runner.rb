@@ -86,6 +86,9 @@ module Hydra #:nodoc:
       rescue LoadError => ex
         trace "#{file} does not exist [#{ex.to_s}]"
         return ex.to_s
+      rescue Exception => ex
+        trace "Error requiring #{file} [#{ex.to_s}]"
+        return ex.to_s
       end
       output = []
       @result = Test::Unit::TestResult.new
