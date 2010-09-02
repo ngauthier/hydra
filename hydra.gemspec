@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{hydra}
-  s.version = "0.21.0"
+  s.version = "0.22.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
-  s.date = %q{2010-08-23}
+  s.date = %q{2010-09-02}
   s.default_executable = %q{warmsnake.rb}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
@@ -56,6 +56,7 @@ Gem::Specification.new do |s|
      "lib/hydra/stdio.rb",
      "lib/hydra/sync.rb",
      "lib/hydra/tasks.rb",
+     "lib/hydra/tmpdir.rb",
      "lib/hydra/trace.rb",
      "lib/hydra/worker.rb",
      "test/fixtures/assert_true.rb",
@@ -88,21 +89,21 @@ Gem::Specification.new do |s|
   s.summary = %q{Distributed testing toolkit}
   s.test_files = [
     "test/pipe_test.rb",
-     "test/sync_test.rb",
+     "test/test_helper.rb",
      "test/ssh_test.rb",
+     "test/message_test.rb",
+     "test/master_test.rb",
+     "test/fixtures/write_file.rb",
+     "test/fixtures/slow.rb",
+     "test/fixtures/write_file_with_pending_spec.rb",
+     "test/fixtures/write_file_spec.rb",
+     "test/fixtures/features/step_definitions.rb",
+     "test/fixtures/hello_world.rb",
      "test/fixtures/write_file_alternate_spec.rb",
      "test/fixtures/sync_test.rb",
-     "test/fixtures/hello_world.rb",
-     "test/fixtures/features/step_definitions.rb",
      "test/fixtures/assert_true.rb",
-     "test/fixtures/slow.rb",
-     "test/fixtures/write_file_spec.rb",
-     "test/fixtures/write_file_with_pending_spec.rb",
-     "test/fixtures/write_file.rb",
-     "test/message_test.rb",
-     "test/test_helper.rb",
-     "test/master_test.rb",
      "test/runner_test.rb",
+     "test/sync_test.rb",
      "test/worker_test.rb"
   ]
 
