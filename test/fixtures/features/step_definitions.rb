@@ -1,9 +1,9 @@
 Given /^a target file$/ do
-  @target_file = File.expand_path(File.join(Dir.tmpdir, 'hydra_test.txt'))
+  @target_file = File.expand_path(File.join(Dir.consistent_tmpdir, 'hydra_test.txt'))
 end
 
 Given /^an alternate target file$/ do
-  @target_file = File.expand_path(File.join(Dir.tmpdir, 'alternate_hydra_test.txt'))
+  @target_file = File.expand_path(File.join(Dir.consistent_tmpdir, 'alternate_hydra_test.txt'))
 end
 
 When /^I write "([^\"]*)" to the file$/ do |text|

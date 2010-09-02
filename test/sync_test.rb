@@ -13,8 +13,8 @@ class SyncTest < Test::Unit::TestCase
     end
 
     should "synchronize a test file over ssh with rsync" do
-      local = File.join(Dir.tmpdir, 'hydra', 'local')
-      remote = File.join(Dir.tmpdir, 'hydra', 'remote')
+      local = File.join(Dir.consistent_tmpdir, 'hydra', 'local')
+      remote = File.join(Dir.consistent_tmpdir, 'hydra', 'remote')
       sync_test = File.join(File.dirname(__FILE__), 'fixtures', 'sync_test.rb')
       [local, remote].each{|f| FileUtils.rm_rf f; FileUtils.mkdir_p f}
 
@@ -58,9 +58,9 @@ class SyncTest < Test::Unit::TestCase
     end
 
     should "synchronize a test file over ssh with rsync to multiple workers" do
-      local = File.join(Dir.tmpdir, 'hydra', 'local')
-      remote_a = File.join(Dir.tmpdir, 'hydra', 'remote_a')
-      remote_b = File.join(Dir.tmpdir, 'hydra', 'remote_b')
+      local = File.join(Dir.consistent_tmpdir, 'hydra', 'local')
+      remote_a = File.join(Dir.consistent_tmpdir, 'hydra', 'remote_a')
+      remote_b = File.join(Dir.consistent_tmpdir, 'hydra', 'remote_b')
       sync_test = File.join(File.dirname(__FILE__), 'fixtures', 'sync_test.rb')
       [local, remote_a, remote_b].each{|f| FileUtils.rm_rf f; FileUtils.mkdir_p f}
 

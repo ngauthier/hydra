@@ -35,7 +35,7 @@ class MasterTest < Test::Unit::TestCase
       Hydra::Master.new(:files => [test_file])
       assert File.exists?(target_file)
       assert_equal "HYDRA", File.read(target_file)
-      report_file = File.join(Dir.tmpdir, 'hydra_heuristics.yml')
+      report_file = File.join(Dir.consistent_tmpdir, 'hydra_heuristics.yml')
       assert File.exists?(report_file)
       assert report = YAML.load_file(report_file)
       assert_not_nil report[test_file]
@@ -104,8 +104,8 @@ class MasterTest < Test::Unit::TestCase
     end
 
     should "synchronize a test file over ssh with rsync" do
-      local = File.join(Dir.tmpdir, 'hydra', 'local')
-      remote = File.join(Dir.tmpdir, 'hydra', 'remote')
+      local = File.join(Dir.consistent_tmpdir, 'hydra', 'local')
+      remote = File.join(Dir.consistent_tmpdir, 'hydra', 'remote')
       sync_test = File.join(File.dirname(__FILE__), 'fixtures', 'sync_test.rb')
       [local, remote].each{|f| FileUtils.rm_rf f; FileUtils.mkdir_p f}
 

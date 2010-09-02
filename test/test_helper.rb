@@ -12,11 +12,11 @@ Test::Unit.run = false
 
 class Test::Unit::TestCase
   def target_file
-    File.expand_path(File.join(Dir.tmpdir, 'hydra_test.txt'))
+    File.expand_path(File.join(Dir.consistent_tmpdir, 'hydra_test.txt'))
   end
   
   def alternate_target_file
-    File.expand_path(File.join(Dir.tmpdir, 'alternate_hydra_test.txt'))
+    File.expand_path(File.join(Dir.consistent_tmpdir, 'alternate_hydra_test.txt'))
   end
 
   def test_file
