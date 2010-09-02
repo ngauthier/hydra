@@ -14,6 +14,7 @@ module Hydra #:nodoc:
     include Hydra::Messages::Master
     include Open3
     traceable('MASTER')
+    attr_reader :failed_files
 
     # Create a new Master
     #
@@ -54,6 +55,7 @@ module Hydra #:nodoc:
       @files = Array(opts.fetch('files') { nil })
       raise "No files, nothing to do" if @files.empty?
       @incomplete_files = @files.dup
+      @failed_files = []
       @workers = []
       @listeners = []
       @event_listeners = Array(opts.fetch('listeners') { nil } )
@@ -116,6 +118,9 @@ module Hydra #:nodoc:
         @incomplete_files.delete_at(@incomplete_files.index(message.file))
         trace "#{@incomplete_files.size} Files Remaining"
         @event_listeners.each{|l| l.file_end(message.file, message.output) }
+        unless message.output == '.'
+          @failed_files << message.file
+        end
         if @incomplete_files.empty?
           @workers.each do |worker|
             @event_listeners.each{|l| l.worker_end(worker) }
