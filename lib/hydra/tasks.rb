@@ -105,8 +105,8 @@ module Hydra #:nodoc:
     def define
       desc "Hydra Tests" + (@name == :hydra ? "" : " for #{@name}")
       task @name do
-        if Object.const_defined?('RAILS_ENV') && RAILS_ENV == 'development'
-          $stderr.puts %{WARNING: RAILS_ENV is "development". Make sure to set it properly (ex: "RAILS_ENV=test rake hydra")}
+        if Object.const_defined?('Rails') && Rails.env == 'development'
+          $stderr.puts %{WARNING: Rails Environment is "development". Make sure to set it properly (ex: "RAILS_ENV=test rake hydra")}
         end
 
         Hydra::Master.new(@opts)
