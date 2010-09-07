@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{hydra}
-  s.version = "0.21.0"
+  s.version = "0.21.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
-  s.date = %q{2010-08-23}
+  s.date = %q{2010-09-07}
   s.default_executable = %q{warmsnake.rb}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
@@ -56,6 +56,7 @@ Gem::Specification.new do |s|
      "lib/hydra/stdio.rb",
      "lib/hydra/sync.rb",
      "lib/hydra/tasks.rb",
+     "lib/hydra/tmpdir.rb",
      "lib/hydra/trace.rb",
      "lib/hydra/worker.rb",
      "test/fixtures/assert_true.rb",
