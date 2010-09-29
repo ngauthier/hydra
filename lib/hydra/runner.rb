@@ -138,29 +138,35 @@ module Hydra #:nodoc:
       dev_null = StringIO.new
       hydra_response = StringIO.new
 
-      unless @step_mother
+      unless @cuke_runtime
         require 'cucumber'
         require 'hydra/cucumber/formatter'
-        @step_mother = Cucumber::StepMother.new
+        Cucumber.logger.level = Logger::INFO
+        @cuke_runtime = Cucumber::Runtime.new
         @cuke_configuration = Cucumber::Cli::Configuration.new(dev_null, dev_null)
         @cuke_configuration.parse!(['features']+files)
 
-        @step_mother.options = @cuke_configuration.options
-        @step_mother.log = @cuke_configuration.log
-        @step_mother.load_code_files(@cuke_configuration.support_to_load)
-        @step_mother.after_configuration(@cuke_configuration)
-        @step_mother.load_code_files(@cuke_configuration.step_defs_to_load)
+        support_code = Cucumber::Runtime::SupportCode.new(@cuke_runtime, @cuke_configuration.guess?)
+        support_code.load_files!(@cuke_configuration.support_to_load + @cuke_configuration.step_defs_to_load)
+        support_code.fire_hook(:after_configuration, @cuke_configuration)
+        # i don't like this, but there no access to set the instance of SupportCode in Runtime
+        @cuke_runtime.instance_variable_set('@support_code',support_code)
       end
       cuke_formatter = Cucumber::Formatter::Hydra.new(
-        @step_mother, hydra_response, @cuke_configuration.options
+        @cuke_runtime, hydra_response, @cuke_configuration.options
       )
 
       cuke_runner ||= Cucumber::Ast::TreeWalker.new(
-        @step_mother, [cuke_formatter], @cuke_configuration.options, dev_null
+        @cuke_runtime, [cuke_formatter], @cuke_configuration
       )
-      @step_mother.visitor = cuke_runner
+      @cuke_runtime.visitor = cuke_runner
 
-      features = @step_mother.load_plain_text_features(files)
+      loader = Cucumber::Runtime::FeaturesLoader.new(
+        files,
+        @cuke_configuration.filters,
+        @cuke_configuration.tag_expression
+      )
+      features = loader.features
       tag_excess = tag_excess(features, @cuke_configuration.options[:tag_expression].limits)
       @cuke_configuration.options[:tag_excess] = tag_excess
 
