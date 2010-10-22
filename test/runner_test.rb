@@ -80,9 +80,6 @@ class RunnerTest < Test::Unit::TestCase
       # we run this in a fork to not contaminate
       # the main test environment
       pid = Process.fork do
-        # need to get into the fixtures directory so cucumber doesn't load up the whole project
-        Dir.chdir(File.join(File.dirname(__FILE__), 'fixtures'))
-
         runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
         runner.run_file(cucumber_feature_file)
         assert File.exists?(target_file)
