@@ -79,7 +79,9 @@ module Hydra #:nodoc:
       yield self if block_given?
 
       # Ensure we override rspec's at_exit
-      require 'hydra/spec/autorun_override'
+      if defined?(RSpec)
+        RSpec::Core::Runner.disable_autorun!
+      end
 
       unless @serial
         @config = find_config_file

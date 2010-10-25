@@ -110,7 +110,7 @@ module Hydra #:nodoc:
         require 'rspec'
         require 'hydra/spec/hydra_formatter'
         # Ensure we override rspec's at_exit
-        require 'hydra/spec/autorun_override'
+        RSpec::Core::Runner.disable_autorun!
       rescue LoadError => ex
         return ex.to_s
       end
