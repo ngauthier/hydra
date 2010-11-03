@@ -10,10 +10,8 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
   s.date = %q{2010-11-03}
-  s.default_executable = %q{warmsnake.rb}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
-  s.executables = ["warmsnake.rb"]
   s.extra_rdoc_files = [
     "LICENSE",
      "README.rdoc",
@@ -27,7 +25,6 @@ Gem::Specification.new do |s|
      "Rakefile",
      "TODO",
      "VERSION",
-     "bin/warmsnake.rb",
      "caliper.yml",
      "hydra-icon-64x64.png",
      "hydra.gemspec",
