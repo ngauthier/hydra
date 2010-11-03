@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{hydra}
-  s.version = "0.23.1"
+  s.version = "0.23.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nick Gauthier"]
-  s.date = %q{2010-10-25}
+  s.date = %q{2010-11-03}
   s.default_executable = %q{warmsnake.rb}
   s.description = %q{Spread your tests over multiple machines to test your code faster.}
   s.email = %q{nick@smartlogicsolutions.com}
@@ -61,6 +61,7 @@ Gem::Specification.new do |s|
      "lib/hydra/worker.rb",
      "test/fixtures/assert_true.rb",
      "test/fixtures/config.yml",
+     "test/fixtures/conflicting.rb",
      "test/fixtures/features/step_definitions.rb",
      "test/fixtures/features/write_alternate_file.feature",
      "test/fixtures/features/write_file.feature",
@@ -85,7 +86,7 @@ Gem::Specification.new do |s|
   s.homepage = %q{http://github.com/ngauthier/hydra}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.6}
+  s.rubygems_version = %q{1.3.7}
   s.summary = %q{Distributed testing toolkit}
   s.test_files = [
     "test/pipe_test.rb",
@@ -98,6 +99,7 @@ Gem::Specification.new do |s|
      "test/fixtures/assert_true.rb",
      "test/fixtures/slow.rb",
      "test/fixtures/write_file_spec.rb",
+     "test/fixtures/conflicting.rb",
      "test/fixtures/write_file_with_pending_spec.rb",
      "test/fixtures/write_file.rb",
      "test/message_test.rb",
@@ -111,20 +113,20 @@ Gem::Specification.new do |s|
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
-    if Gem::Version.new(Gem::RubyGemsVersion) >= Gem::Version.new('1.2.0') then
+    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
       s.add_development_dependency(%q<shoulda>, ["= 2.10.3"])
-      s.add_development_dependency(%q<rspec>, ["= 2.0.0.beta19"])
+      s.add_development_dependency(%q<rspec>, ["= 2.0.0.beta.19"])
       s.add_development_dependency(%q<cucumber>, ["= 0.9.2"])
       s.add_development_dependency(%q<therubyracer>, ["= 0.7.4"])
     else
       s.add_dependency(%q<shoulda>, ["= 2.10.3"])
-      s.add_dependency(%q<rspec>, ["= 2.0.0.beta19"])
+      s.add_dependency(%q<rspec>, ["= 2.0.0.beta.19"])
       s.add_dependency(%q<cucumber>, ["= 0.9.2"])
       s.add_dependency(%q<therubyracer>, ["= 0.7.4"])
     end
   else
     s.add_dependency(%q<shoulda>, ["= 2.10.3"])
-    s.add_dependency(%q<rspec>, ["= 2.0.0.beta19"])
+    s.add_dependency(%q<rspec>, ["= 2.0.0.beta.19"])
     s.add_dependency(%q<cucumber>, ["= 0.9.2"])
     s.add_dependency(%q<therubyracer>, ["= 0.7.4"])
   end
