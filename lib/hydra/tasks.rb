@@ -36,6 +36,8 @@ module Hydra #:nodoc:
     # files that may not play nice with others.
     attr_accessor :serial
 
+    attr_accessor :environment
+
     #
     # Search for the hydra config file
     def find_config_file
@@ -91,7 +93,8 @@ module Hydra #:nodoc:
         :verbose => @verbose,
         :autosort => @autosort,
         :files => @files,
-        :listeners => @listeners
+        :listeners => @listeners,
+        :environment => @environment
       }
       if @config
         @opts.merge!(:config => @config)
