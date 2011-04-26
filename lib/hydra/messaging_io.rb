@@ -8,14 +8,17 @@ module Hydra #:nodoc:
     #  IO.gets
     #    => Hydra::Message # or subclass
     def gets
-      raise IOError unless @reader
-      message = @reader.gets
-      return nil unless message
-      return Message.build(eval(message.chomp))
-    rescue SyntaxError, NameError
-      # uncomment to help catch remote errors by seeing all traffic
-      #$stderr.write "Not a message: [#{message.inspect}]\n"
-      return gets
+      while true
+        begin
+          raise IOError unless @reader
+          message = @reader.gets
+          return nil unless message
+          return Message.build(eval(message.chomp))
+        rescue SyntaxError, NameError
+          # uncomment to help catch remote errors by seeing all traffic
+          #$stderr.write "Not a message: [#{message.inspect}]\n"
+        end
+      end
     end
 
     # Write a Message to the output IO object. It will automatically
