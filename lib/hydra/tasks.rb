@@ -38,6 +38,9 @@ module Hydra #:nodoc:
 
     attr_accessor :environment
 
+    # Set to false if you don't want to show the total running time
+    attr_accessor :show_time
+
     #
     # Search for the hydra config file
     def find_config_file
@@ -77,6 +80,7 @@ module Hydra #:nodoc:
       @autosort = true
       @serial = false
       @listeners = [Hydra::Listener::ProgressBar.new]
+      @show_time = true
 
       yield self if block_given?
 
@@ -114,7 +118,12 @@ module Hydra #:nodoc:
           $stderr.puts %{WARNING: Rails Environment is "development". Make sure to set it properly (ex: "RAILS_ENV=test rake hydra")}
         end
 
+        start = Time.now if @show_time
+
         master = Hydra::Master.new(@opts)
+
+        $stdout.puts "\nFinished in #{'%.6f' % (Time.now - start)} seconds." if @show_time
+
         unless master.failed_files.empty?
           raise "Hydra: Not all tests passes"
         end
