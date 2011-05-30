@@ -98,7 +98,7 @@ class RunnerTest < Test::Unit::TestCase
     should "be able to run a runner over ssh" do
       ssh = Hydra::SSH.new(
         'localhost', 
-        File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib')),
+         remote_dir_path,
         "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Runner.new(:io => Hydra::Stdio.new, :verbose => true);\""
       )
       assert ssh.gets.is_a?(Hydra::Messages::Runner::RequestFile)

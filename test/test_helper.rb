@@ -56,6 +56,10 @@ class Test::Unit::TestCase
   def conflicting_test_file
     File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'conflicting.rb'))
   end
+
+  def remote_dir_path
+    File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
+  end
 end
 
 module Hydra #:nodoc:

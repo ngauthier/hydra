@@ -18,5 +18,6 @@ coverage
 rdoc
 pkg
 tags
+.rvmrc
 
 ## PROJECT::SPECIFIC

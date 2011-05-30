@@ -115,8 +115,8 @@ class MasterTest < Test::Unit::TestCase
         :workers => [{
           :type => :ssh,
           :connect => 'localhost',
-          :directory => File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib')),
-          :runners => 1 
+          :directory => remote_dir_path,
+          :runners => 1
         }]
       )
       assert File.exists?(target_file)
