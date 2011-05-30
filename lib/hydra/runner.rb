@@ -17,9 +17,13 @@ module Hydra #:nodoc:
     # parent) to send it messages on which files to execute.
     def initialize(opts = {})
       @io = opts.fetch(:io) { raise "No IO Object" } 
-      @verbose = opts.fetch(:verbose) { false }      
+      @verbose = opts.fetch(:verbose) { false }
+      @event_listeners = Array( opts.fetch( :runner_listeners ) { nil } )
+
       $stdout.sync = true
       trace 'Booted. Sending Request for file'
+
+      runner_begin
 
       @io.write RequestFile.new
       begin
@@ -28,6 +32,11 @@ module Hydra #:nodoc:
         trace ex.to_s
         raise ex
       end
+    end
+
+    def runner_begin
+      trace "Firing runner_begin event"
+      @event_listeners.each {|l| l.runner_begin }
     end
 
     # Run a test file and report the results
@@ -54,6 +63,12 @@ module Hydra #:nodoc:
     # Stop running
     def stop
       @running = false
+      runner_end
+    end
+
+    def runner_end
+      trace "Firing runner_end event"
+      @event_listeners.each {|l| l.runner_end }
     end
 
     private
@@ -74,7 +89,7 @@ module Hydra #:nodoc:
           end
         rescue IOError => ex
           trace "Runner lost Worker"
-          @running = false
+          stop
         end
       end
     end
