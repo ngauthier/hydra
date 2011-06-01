@@ -16,7 +16,6 @@ module Hydra #:nodoc:
     # Boot up a runner. It takes an IO object (generally a pipe from its
     # parent) to send it messages on which files to execute.
     def initialize(opts = {})
-      Runner.runner_instance = self # save Runner to make sure it stop at_exit
       @io = opts.fetch(:io) { raise "No IO Object" }
       @verbose = opts.fetch(:verbose) { false }
       @event_listeners = Array( opts.fetch( :runner_listeners ) { nil } )
@@ -24,6 +23,8 @@ module Hydra #:nodoc:
       $stdout.sync = true
 
       runner_begin
+
+      reg_exit_hook
 
       trace 'Booted. Sending Request for file'
       @io.write RequestFile.new
@@ -40,12 +41,11 @@ module Hydra #:nodoc:
       @event_listeners.each {|l| l.runner_begin( self ) }
     end
 
-    def self.runner_instance=( runner )
-      @runner_instance = runner
-    end
-
-    def self.runner_instance
-      @runner_instance
+    def reg_exit_hook
+      at_exit do
+        # NOTE: do not use trace here
+        stop
+      end
     end
 
     # Run a test file and report the results
@@ -71,6 +71,7 @@ module Hydra #:nodoc:
 
     # Stop running
     def stop
+      # NOTE: do not use trace here
       runner_end if @running
       @running = false
     end
@@ -287,9 +288,5 @@ module Hydra #:nodoc:
         end
       end.compact
     end
-  end
-
-  at_exit do
-    Runner.runner_instance.stop if Runner.runner_instance
   end
 end
