@@ -1,4 +1,6 @@
 require File.join(File.dirname(__FILE__), 'test_helper')
+require File.join(File.dirname(__FILE__), 'fixtures', 'runner_listeners')
+require File.join(File.dirname(__FILE__), 'fixtures', 'master_listeners')
 
 class MasterTest < Test::Unit::TestCase
   context "with a file to test and a destination to verify" do
@@ -177,5 +179,111 @@ class MasterTest < Test::Unit::TestCase
       # ensure b is deleted
       assert !File.exists?(File.join(remote, 'test_b.rb')), "B was not deleted"
     end
+  end
+
+  context "with a runner_end event" do
+    setup do
+      # avoid having other tests interfering with us
+      sleep(0.2)
+      FileUtils.rm_f(target_file)
+      FileUtils.rm_f(alternate_target_file)
+
+      @worker_began_flag = File.expand_path(File.join(Dir.consistent_tmpdir, 'worker_began_flag')) #used to know when the worker is ready
+      FileUtils.rm_f(@worker_began_flag)
+
+      @runner_listener = 'HydraExtension::RunnerListener::RunnerEndTest.new' # runner_end method that creates alternate_target_file
+      @master_listener = HydraExtension::Listener::WorkerBeganFlag.new  #used to know when the runner is up
+    end
+
+    teardown do
+      FileUtils.rm_f(target_file)
+      FileUtils.rm_f(alternate_target_file)
+    end
+
+    context "running a local worker" do
+      setup do
+        @pid = Process.fork do
+          Hydra::Master.new(
+                            :files => [test_file] * 6,
+                            :autosort => false,
+                            :listeners => [@master_listener],
+                            :runner_listeners => [@runner_listener],
+                            :verbose => false
+                            )
+        end
+      end
+
+      should "run runner_end on successful termination" do
+        Process.waitpid @pid
+
+        assert File.exists?( target_file )
+
+        wait_for_file_for_a_while alternate_target_file, 2
+        assert File.exists? alternate_target_file
+      end
+
+      should "run runner_end after interruption signal" do
+        wait_for_runner_to_begin
+        Process.kill 'SIGINT', @pid
+        Process.waitpid @pid
+
+        wait_for_file_for_a_while alternate_target_file, 2
+        assert File.exists? alternate_target_file # runner_end should create this file
+      end
+    end
+
+    context "running a remote worker" do
+      setup do
+        copy_worker_init_file # this method has a protection to avoid erasing an existing worker_init_file
+        @pid = Process.fork do
+          Hydra::Master.new(
+                            :files => [test_file] * 6,
+                            :autosort => false,
+                            :listeners => [@master_listener],
+                            :runner_listeners => [@runner_listener],
+                            :workers => [{
+                                           :type => :ssh,
+                                           :connect => 'localhost',
+                                           :directory => remote_dir_path,
+                                           :runners => 1
+                                         }],
+                            :verbose => false
+                            )
+        end
+      end
+
+      teardown do
+        FileUtils.rm_f(@remote_init_file) unless @protect_init_file
+      end
+
+      should "run runner_end on successful termination" do
+        Process.waitpid @pid
+
+        wait_for_file_for_a_while alternate_target_file, 2
+        assert File.exists? target_file
+        assert File.exists? alternate_target_file
+      end
+    end
+  end
+
+  private
+  #  this requires that a worker_begin listener creates a file named worker_began_flag in tmp directory
+  def wait_for_runner_to_begin
+    FileUtils.rm_f(@worker_began_flag)
+
+    wait_for_file_for_a_while @worker_began_flag, 2
+    assert File.exists?( @worker_began_flag ), "The worker didn't begin!!"
+  end
+
+  # with a protection to avoid erasing something important in lib
+  def copy_worker_init_file
+    @remote_init_file = "#{remote_dir_path}/#{File.basename( hydra_worker_init_file )}"
+    if File.exists?( @remote_init_file )
+      $stderr.puts "\nWARNING!!!: #{@remote_init_file} exits and this test needs to create a new file here. Make sure there is nothing inportant in that file and remove it before running this test\n\n"
+      @protect_init_file = true
+      exit
+    end
+    # copy the hydra_worker_init to the correct location
+    FileUtils.cp(hydra_worker_init_file, remote_dir_path)
   end
 end

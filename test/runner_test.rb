@@ -107,7 +107,7 @@ class RunnerTest < Test::Unit::TestCase
           request_a_file_and_verify_completion(pipe, test_file)
         end
 
-        run_the_runner(pipe,  [RunnerListener::RunnerBeginTest.new] )
+        run_the_runner(pipe,  [HydraExtension::RunnerListener::RunnerBeginTest.new] )
         Process.wait(parent)
 
         # ensure runner_begin was fired
@@ -115,7 +115,7 @@ class RunnerTest < Test::Unit::TestCase
       end
 
       should "fire runner_end event after successful shutting down" do
-        send_file_to_ssh_runner_and_verify_completion ", :runner_listeners => [RunnerListener::RunnerEndTest.new]"
+        send_file_to_ssh_runner_and_verify_completion ", :runner_listeners => [HydraExtension::RunnerListener::RunnerEndTest.new]"
 
         wait_for_file_for_a_while alternate_target_file, 2
 
@@ -130,12 +130,10 @@ class RunnerTest < Test::Unit::TestCase
 
           # grab its response.
           response = pipe.gets
-
           pipe.close #this will be detected by the runner and it should call runner_end
-
         end
 
-        run_the_runner(pipe,  [RunnerListener::RunnerEndTest.new] )
+        run_the_runner(pipe,  [HydraExtension::RunnerListener::RunnerEndTest.new] )
         Process.wait(parent)
 
         # ensure runner_begin was fired

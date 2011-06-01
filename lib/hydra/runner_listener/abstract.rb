@@ -12,11 +12,11 @@ module Hydra #:nodoc:
       end
 
       # Fired by the runner just before requesting the first file
-      def runner_begin
+      def runner_begin( runner )
       end
 
       # Fired by the runner just after stoping
-      def runner_end
+      def runner_end( runner )
       end
     end
   end

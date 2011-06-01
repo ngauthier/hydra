@@ -60,6 +60,20 @@ class Test::Unit::TestCase
   def remote_dir_path
     File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))
   end
+
+  def hydra_worker_init_file
+    File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'hydra_worker_init.rb'))
+  end
+
+  #this method allow us to wait for a file for a maximum number of time, so the
+  #test can pass in slower machines. This helps to speed up the tests
+  def wait_for_file_for_a_while file, time_to_wait
+    time_begin = Time.now
+
+    until Time.now - time_begin >= time_to_wait or File.exists?( file ) do
+      sleep 0.01
+    end
+  end
 end
 
 module Hydra #:nodoc:
