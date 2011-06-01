@@ -202,14 +202,16 @@ class MasterTest < Test::Unit::TestCase
 
     context "running a local worker" do
       setup do
-        @pid = Process.fork do
-          Hydra::Master.new(
-                            :files => [test_file] * 6,
-                            :autosort => false,
-                            :listeners => [@master_listener],
-                            :runner_listeners => [@runner_listener],
-                            :verbose => false
-                            )
+        capture_stderr do # redirect stderr
+          @pid = Process.fork do
+            Hydra::Master.new(
+                              :files => [test_file] * 6,
+                              :autosort => false,
+                              :listeners => [@master_listener],
+                              :runner_listeners => [@runner_listener],
+                              :verbose => false
+                              )
+          end
         end
       end
 
@@ -224,7 +226,9 @@ class MasterTest < Test::Unit::TestCase
 
       should "run runner_end after interruption signal" do
         wait_for_runner_to_begin
+
         Process.kill 'SIGINT', @pid
+
         Process.waitpid @pid
 
         wait_for_file_for_a_while alternate_target_file, 2
@@ -235,20 +239,22 @@ class MasterTest < Test::Unit::TestCase
     context "running a remote worker" do
       setup do
         copy_worker_init_file # this method has a protection to avoid erasing an existing worker_init_file
-        @pid = Process.fork do
-          Hydra::Master.new(
-                            :files => [test_file] * 6,
-                            :autosort => false,
-                            :listeners => [@master_listener],
-                            :runner_listeners => [@runner_listener],
-                            :workers => [{
-                                           :type => :ssh,
-                                           :connect => 'localhost',
-                                           :directory => remote_dir_path,
-                                           :runners => 1
+        capture_stderr do # redirect stderr
+          @pid = Process.fork do
+            Hydra::Master.new(
+                              :files => [test_file] * 6,
+                              :autosort => false,
+                              :listeners => [@master_listener],
+                              :runner_listeners => [@runner_listener],
+                              :workers => [{
+                                             :type => :ssh,
+                                             :connect => 'localhost',
+                                             :directory => remote_dir_path,
+                                             :runners => 1
                                          }],
-                            :verbose => false
-                            )
+                              :verbose => false
+                              )
+          end
         end
       end
 

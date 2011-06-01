@@ -4,6 +4,7 @@ gem 'shoulda', '2.10.3'
 gem 'rspec', '2.0.0.beta.19'
 require 'shoulda'
 require 'tmpdir'
+require "stringio"
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
@@ -63,6 +64,18 @@ class Test::Unit::TestCase
 
   def hydra_worker_init_file
     File.expand_path(File.join(File.dirname(__FILE__), 'fixtures', 'hydra_worker_init.rb'))
+  end
+
+  def capture_stderr
+    # The output stream must be an IO-like object. In this case we capture it in
+    # an in-memory IO object so we can return the string value. You can assign any
+    # IO object here.
+    previous_stderr, $stderr = $stderr, StringIO.new
+    yield
+    $stderr.string
+  ensure
+    # Restore the previous value of stderr (typically equal to STDERR).
+    $stderr = previous_stderr
   end
 
   #this method allow us to wait for a file for a maximum number of time, so the

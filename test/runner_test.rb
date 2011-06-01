@@ -80,20 +80,22 @@ class RunnerTest < Test::Unit::TestCase
       # because of all the crap cucumber pulls in
       # we run this in a fork to not contaminate
       # the main test environment
-      pid = Process.fork do
-        runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
-        runner.run_file(cucumber_feature_file)
-        assert File.exists?(target_file)
-        assert_equal "HYDRA", File.read(target_file)
-        
-        FileUtils.rm_f(target_file)
-        
-        runner.run_file(alternate_cucumber_feature_file)
-        assert File.exists?(alternate_target_file)
-        assert_equal "HYDRA", File.read(alternate_target_file)
-        assert !File.exists?(target_file)
+      capture_stderr do # redirect stderr
+        pid = Process.fork do
+          runner = Hydra::Runner.new(:io => File.new('/dev/null', 'w'))
+          runner.run_file(cucumber_feature_file)
+          assert File.exists?(target_file)
+          assert_equal "HYDRA", File.read(target_file)
+
+          FileUtils.rm_f(target_file)
+
+          runner.run_file(alternate_cucumber_feature_file)
+          assert File.exists?(alternate_target_file)
+          assert_equal "HYDRA", File.read(alternate_target_file)
+          assert !File.exists?(target_file)
+        end
+        Process.wait pid
       end
-      Process.wait pid
     end
 
     should "be able to run a runner over ssh" do
