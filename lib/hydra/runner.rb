@@ -155,7 +155,7 @@ module Hydra #:nodoc:
         Cucumber.logger.level = Logger::INFO
         @cuke_runtime = Cucumber::Runtime.new
         @cuke_configuration = Cucumber::Cli::Configuration.new(dev_null, dev_null)
-        @cuke_configuration.parse!(['features']+files)
+        @cuke_configuration.parse!(ENV['CUCUMBER_OPTS'].split(' ') + ['features'] + files)
 
         support_code = Cucumber::Runtime::SupportCode.new(@cuke_runtime, @cuke_configuration.guess?)
         support_code.load_files!(@cuke_configuration.support_to_load + @cuke_configuration.step_defs_to_load)
