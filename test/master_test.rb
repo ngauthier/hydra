@@ -201,9 +201,8 @@ class MasterTest < Test::Unit::TestCase
     end
 
     context "running a local worker" do
-      setup do
-        capture_stderr do # redirect stderr
-          @pid = Process.fork do
+      should "run runner_end on successful termination" do
+        @pid = Process.fork do
             Hydra::Master.new(
               :files => [test_file] * 6,
               :autosort => false,
@@ -212,27 +211,37 @@ class MasterTest < Test::Unit::TestCase
               :verbose => false
             )
           end
-        end
-      end
-
-      should "run runner_end on successful termination" do
         Process.waitpid @pid
 
-        assert File.exists?( target_file )
-
-        wait_for_file_for_a_while alternate_target_file, 2
-        assert File.exists? alternate_target_file
+        assert_file_exists alternate_target_file
       end
 
       should "run runner_end after interruption signal" do
+
+        class << @master_listener
+          def worker_begin( worker )
+            super
+            sleep 1 while true #ensure the process doesn't finish before killing it
+          end
+        end
+
+        capture_stderr do # redirect stderr
+          @pid = Process.fork do
+            Hydra::Master.new(
+              :files => [test_file],
+              :autosort => false,
+              :listeners => [@master_listener],
+              :runner_listeners => [@runner_listener],
+              :verbose => false
+            )
+          end
+        end
         wait_for_runner_to_begin
 
         Process.kill 'SIGINT', @pid
-
         Process.waitpid @pid
 
-        wait_for_file_for_a_while alternate_target_file, 2
-        assert File.exists? alternate_target_file # runner_end should create this file
+        assert_file_exists alternate_target_file
       end
     end
 
@@ -242,7 +251,7 @@ class MasterTest < Test::Unit::TestCase
         capture_stderr do # redirect stderr
           @pid = Process.fork do
             Hydra::Master.new(
-              :files => [test_file] * 6,
+              :files => [test_file],
               :autosort => false,
               :listeners => [@master_listener],
               :runner_listeners => [@runner_listener],
@@ -265,9 +274,7 @@ class MasterTest < Test::Unit::TestCase
       should "run runner_end on successful termination" do
         Process.waitpid @pid
 
-        wait_for_file_for_a_while alternate_target_file, 2
-        assert File.exists? target_file
-        assert File.exists? alternate_target_file
+        assert_file_exists alternate_target_file
       end
     end
   end
@@ -277,8 +284,7 @@ class MasterTest < Test::Unit::TestCase
   def wait_for_runner_to_begin
     FileUtils.rm_f(@worker_began_flag)
 
-    wait_for_file_for_a_while @worker_began_flag, 2
-    assert File.exists?( @worker_began_flag ), "The worker didn't begin!!"
+    assert_file_exists @worker_began_flag
   end
 
   # with a protection to avoid erasing something important in lib

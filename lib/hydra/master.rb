@@ -173,8 +173,6 @@ module Hydra #:nodoc:
     def boot_ssh_worker(worker)
       sync = Sync.new(worker, @sync, @verbose)
 
-#      @environment+=" bundle exec" #used for manually testing
-
       runners = worker.fetch('runners') { raise "You must specify the number of runners"  }
       command = worker.fetch('command') {
         "RAILS_ENV=#{@environment} ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Worker.new(:io => Hydra::Stdio.new, :runners => #{runners}, :verbose => #{@verbose}, :runner_listeners => \'#{@string_runner_event_listeners}\' );\""

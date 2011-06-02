@@ -80,12 +80,14 @@ class Test::Unit::TestCase
 
   #this method allow us to wait for a file for a maximum number of time, so the
   #test can pass in slower machines. This helps to speed up the tests
-  def wait_for_file_for_a_while file, time_to_wait
+  def assert_file_exists file, time_to_wait = 2
     time_begin = Time.now
 
     until Time.now - time_begin >= time_to_wait or File.exists?( file ) do
       sleep 0.01
     end
+
+    assert File.exists?( file )
   end
 end
 

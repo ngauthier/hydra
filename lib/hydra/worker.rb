@@ -130,7 +130,6 @@ module Hydra #:nodoc:
           rescue IOError => ex
             trace "Worker lost Master"
             shutdown
-            #Thread.exit
           end
         end
       end

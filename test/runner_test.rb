@@ -137,17 +137,14 @@ class RunnerTest < Test::Unit::TestCase
           Process.wait(@parent)
 
           # ensure runner_begin was fired
-          assert File.exists?( alternate_target_file )
+          assert_file_exists alternate_target_file
         end
 
-        should "fire runner_end event after successful shutting down" do
+        should "fire runner_end event" do
           run_the_runner(@pipe,  [HydraExtension::RunnerListener::RunnerEndTest.new] )
           Process.wait(@parent)
 
-          wait_for_file_for_a_while alternate_target_file, 2
-
-          # ensure runner_end was fired
-          assert File.exists?( alternate_target_file )
+          assert_file_exists alternate_target_file
         end
       end
 
@@ -171,17 +168,6 @@ class RunnerTest < Test::Unit::TestCase
   end
 
   module RunnerTestHelper
-
-    #this method allow us to wait for a file for a maximum number of time, so the
-    #test can pass in slower machines. This helps to speed up the tests
-    def wait_for_file_for_a_while file, time_to_wait
-      time_begin = Time.now
-
-      until Time.now - time_begin >= time_to_wait or File.exists?( file ) do
-        sleep 0.01
-      end
-    end
-
     def request_a_file_and_verify_completion(pipe, file)
       pipe.identify_as_parent
 
