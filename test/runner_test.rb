@@ -99,30 +99,56 @@ class RunnerTest < Test::Unit::TestCase
     end
 
     should "be able to run a runner over ssh" do
-      send_file_to_ssh_runner_and_verify_completion
+      ssh = Hydra::SSH.new(
+        'localhost',
+        File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib')),
+        "ruby -e \"require 'rubygems'; require 'hydra'; Hydra::Runner.new(:io => Hydra::Stdio.new, :verbose => true);\""
+      )
+      assert ssh.gets.is_a?(Hydra::Messages::Runner::RequestFile)
+      ssh.write(Hydra::Messages::Worker::RunFile.new(:file => test_file))
+
+      # grab its response. This makes us wait for it to finish
+      echo = ssh.gets # get the ssh echo
+      response = ssh.gets
+
+      assert_equal Hydra::Messages::Runner::Results, response.class
+
+      # tell it to shut down
+      ssh.write(Hydra::Messages::Worker::Shutdown.new)
+
+      ssh.close
+
+      # ensure it ran
+      assert File.exists?(target_file)
+      assert_equal "HYDRA", File.read(target_file)
     end
 
     context "using runner events" do
-      should "fire runner_begin event" do
-        pipe = Hydra::Pipe.new
-        parent = Process.fork do
-          request_a_file_and_verify_completion(pipe, test_file)
+      context "on successful termination" do
+        setup do
+          @pipe = Hydra::Pipe.new
+          @parent = Process.fork do
+            request_a_file_and_verify_completion(@pipe, test_file)
+          end
         end
 
-        run_the_runner(pipe,  [HydraExtension::RunnerListener::RunnerBeginTest.new] )
-        Process.wait(parent)
+        should "fire runner_begin event" do
+          run_the_runner(@pipe,  [HydraExtension::RunnerListener::RunnerBeginTest.new] )
+          Process.wait(@parent)
 
-        # ensure runner_begin was fired
-        assert File.exists?( alternate_target_file )
-      end
+          # ensure runner_begin was fired
+          assert File.exists?( alternate_target_file )
+        end
 
-      should "fire runner_end event after successful shutting down" do
-        send_file_to_ssh_runner_and_verify_completion ", :runner_listeners => [HydraExtension::RunnerListener::RunnerEndTest.new]"
+        should "fire runner_end event after successful shutting down" do
+          run_the_runner(@pipe,  [HydraExtension::RunnerListener::RunnerEndTest.new] )
+          Process.wait(@parent)
 
-        wait_for_file_for_a_while alternate_target_file, 2
+          wait_for_file_for_a_while alternate_target_file, 2
 
-        # ensure runner_end was fired
-        assert File.exists?( alternate_target_file )
+          # ensure runner_end was fired
+          assert File.exists?( alternate_target_file )
+        end
       end
 
       should "fire runner_end event after losing communication with worker" do
@@ -177,32 +203,6 @@ class RunnerTest < Test::Unit::TestCase
     def run_the_runner(pipe, listeners = [])
       pipe.identify_as_child
       Hydra::Runner.new( :io => pipe, :runner_listeners => listeners )
-    end
-
-    def send_file_to_ssh_runner_and_verify_completion opts = ""
-      ssh = Hydra::SSH.new(
-        'localhost',
-         remote_dir_path,
-         "ruby -e \"require 'rubygems'; require 'hydra'; require '../test/fixtures/runner_listeners' ; Hydra::Runner.new(:io => Hydra::Stdio.new, :verbose => true #{opts} );\""
-      )
-
-      assert ssh.gets.is_a?(Hydra::Messages::Runner::RequestFile)
-      ssh.write(Hydra::Messages::Worker::RunFile.new(:file => test_file))
-
-      # grab its response. This makes us wait for it to finish
-      echo = ssh.gets # get the ssh echo
-      response = ssh.gets
-
-      assert_equal Hydra::Messages::Runner::Results, response.class
-
-      # tell it to shut down
-      ssh.write(Hydra::Messages::Worker::Shutdown.new)
-
-      ssh.close
-
-      # ensure it ran
-      assert File.exists?(target_file)
-      assert_equal "HYDRA", File.read(target_file)
     end
   end
   include RunnerTestHelper

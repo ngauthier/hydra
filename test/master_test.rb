@@ -205,12 +205,12 @@ class MasterTest < Test::Unit::TestCase
         capture_stderr do # redirect stderr
           @pid = Process.fork do
             Hydra::Master.new(
-                              :files => [test_file] * 6,
-                              :autosort => false,
-                              :listeners => [@master_listener],
-                              :runner_listeners => [@runner_listener],
-                              :verbose => false
-                              )
+              :files => [test_file] * 6,
+              :autosort => false,
+              :listeners => [@master_listener],
+              :runner_listeners => [@runner_listener],
+              :verbose => false
+            )
           end
         end
       end
@@ -242,18 +242,18 @@ class MasterTest < Test::Unit::TestCase
         capture_stderr do # redirect stderr
           @pid = Process.fork do
             Hydra::Master.new(
-                              :files => [test_file] * 6,
-                              :autosort => false,
-                              :listeners => [@master_listener],
-                              :runner_listeners => [@runner_listener],
-                              :workers => [{
-                                             :type => :ssh,
-                                             :connect => 'localhost',
-                                             :directory => remote_dir_path,
-                                             :runners => 1
-                                         }],
-                              :verbose => false
-                              )
+              :files => [test_file] * 6,
+              :autosort => false,
+              :listeners => [@master_listener],
+              :runner_listeners => [@runner_listener],
+              :workers => [{
+                :type => :ssh,
+                :connect => 'localhost',
+                :directory => remote_dir_path,
+                :runners => 1
+              }],
+              :verbose => false
+            )
           end
         end
       end
