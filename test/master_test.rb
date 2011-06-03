@@ -188,8 +188,8 @@ class MasterTest < Test::Unit::TestCase
       FileUtils.rm_f(target_file)
       FileUtils.rm_f(alternate_target_file)
 
-      @worker_began_flag = File.expand_path(File.join(Dir.consistent_tmpdir, 'worker_began_flag')) #used to know when the worker is ready
-      FileUtils.rm_f(@worker_began_flag)
+      @runner_began_flag = File.expand_path(File.join(Dir.consistent_tmpdir, 'runner_began_flag')) #used to know when the worker is ready
+      FileUtils.rm_f(@runner_began_flag)
 
       @runner_listener = 'HydraExtension::RunnerListener::RunnerEndTest.new' # runner_end method that creates alternate_target_file
       @master_listener = HydraExtension::Listener::WorkerBeganFlag.new  #used to know when the runner is up
@@ -217,13 +217,7 @@ class MasterTest < Test::Unit::TestCase
       end
 
       should "run runner_end after interruption signal" do
-
-        class << @master_listener
-          def worker_begin( worker )
-            super
-            sleep 1 while true #ensure the process doesn't finish before killing it
-          end
-        end
+        add_infinite_worker_begin_to @master_listener
 
         capture_stderr do # redirect stderr
           @pid = Process.fork do
@@ -248,6 +242,13 @@ class MasterTest < Test::Unit::TestCase
     context "running a remote worker" do
       setup do
         copy_worker_init_file # this method has a protection to avoid erasing an existing worker_init_file
+      end
+
+      teardown do
+        FileUtils.rm_f(@remote_init_file) unless @protect_init_file
+      end
+
+      should "run runner_end on successful termination" do
         capture_stderr do # redirect stderr
           @pid = Process.fork do
             Hydra::Master.new(
@@ -265,13 +266,6 @@ class MasterTest < Test::Unit::TestCase
             )
           end
         end
-      end
-
-      teardown do
-        FileUtils.rm_f(@remote_init_file) unless @protect_init_file
-      end
-
-      should "run runner_end on successful termination" do
         Process.waitpid @pid
 
         assert_file_exists alternate_target_file
@@ -280,11 +274,19 @@ class MasterTest < Test::Unit::TestCase
   end
 
   private
+
+  def add_infinite_worker_begin_to master_listener
+    class << master_listener
+      def worker_begin( worker )
+        super
+        sleep 1 while true #ensure the process doesn't finish before killing it
+      end
+    end
+  end
+
   #  this requires that a worker_begin listener creates a file named worker_began_flag in tmp directory
   def wait_for_runner_to_begin
-    FileUtils.rm_f(@worker_began_flag)
-
-    assert_file_exists @worker_began_flag
+    assert_file_exists @runner_began_flag
   end
 
   # with a protection to avoid erasing something important in lib

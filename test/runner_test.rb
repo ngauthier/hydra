@@ -161,7 +161,7 @@ class RunnerTest < Test::Unit::TestCase
         run_the_runner(pipe,  [HydraExtension::RunnerListener::RunnerEndTest.new] )
         Process.wait(parent)
 
-        # ensure runner_begin was fired
+        # ensure runner_end was fired
         assert File.exists?( alternate_target_file )
       end
     end
