@@ -28,6 +28,7 @@ module Hydra #:nodoc:
         listener = eval(l)
         @runner_event_listeners << listener if listener.is_a?(Hydra::RunnerListener::Abstract)
       end
+      @runner_log_file = opts.fetch(:runner_log_file) { nil }
 
       boot_runners(opts.fetch(:runners) { 1 })
       @io.write(Hydra::Messages::Worker::WorkerBegin.new)
@@ -91,7 +92,7 @@ module Hydra #:nodoc:
         pipe = Hydra::Pipe.new
         child = SafeFork.fork do
           pipe.identify_as_child
-          Hydra::Runner.new(:io => pipe, :verbose => @verbose, :runner_listeners => @runner_event_listeners )
+          Hydra::Runner.new(:io => pipe, :verbose => @verbose, :runner_listeners => @runner_event_listeners, :runner_log_file => @runner_log_file )
         end
         pipe.identify_as_parent
         @runners << { :pid => child, :io => pipe, :idle => false }

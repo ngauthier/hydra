@@ -16,7 +16,7 @@ module Hydra #:nodoc:
     # Boot up a runner. It takes an IO object (generally a pipe from its
     # parent) to send it messages on which files to execute.
     def initialize(opts = {})
-      redirect_output
+      redirect_output( opts.fetch( :runner_log_file ) { nil } )
       reg_trap_sighup
 
       @io = opts.fetch(:io) { raise "No IO Object" }
@@ -289,9 +289,8 @@ module Hydra #:nodoc:
       end.compact
     end
 
-    def redirect_output file_name = nil
-      file_name = 'log/hydra.log' if !file_name and File.exists? 'log/'
-      file_name = 'hydra.log' unless file_name
+    def redirect_output file_name
+      file_name = '/dev/null' unless file_name and !file_name.empty?
       $stderr = $stdout =  File.open(file_name, 'a')
     end
   end

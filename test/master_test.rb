@@ -273,7 +273,81 @@ class MasterTest < Test::Unit::TestCase
     end
   end
 
+  context "redirecting runner's output and errors" do
+    setup do
+      # avoid having other tests interfering with us
+      sleep(0.2)
+      FileUtils.rm_f(target_file)
+      FileUtils.rm_f(runner_log_file)
+      FileUtils.rm_f("#{remote_dir_path}/#{runner_log_file}")
+    end
+
+    teardown do
+      FileUtils.rm_f(target_file)
+      FileUtils.rm_f(runner_log_file)
+      FileUtils.rm_f("#{remote_dir_path}/#{runner_log_file}")
+    end
+
+    should "create a runner log file when usign local worker and passing a log file name" do
+      @pid = Process.fork do
+        Hydra::Master.new(
+              :files => [test_file],
+              :runner_log_file => runner_log_file,
+              :verbose => false
+            )
+      end
+      Process.waitpid @pid
+
+      assert_file_exists target_file # ensure the test was successfully ran
+      assert_file_exists runner_log_file
+    end
+
+    should "create a runner log file when usign remote worker and passing a log file name" do
+      @pid = Process.fork do
+        Hydra::Master.new(
+              :files => [test_file],
+              :workers => [{
+                :type => :ssh,
+                :connect => 'localhost',
+                :directory => remote_dir_path,
+                :runners => 1
+              }],
+              :verbose => false,
+              :runner_log_file => runner_log_file
+            )
+      end
+      Process.waitpid @pid
+
+      assert_file_exists target_file # ensure the test was successfully ran
+      assert_file_exists "#{remote_dir_path}/#{runner_log_file}"
+    end
+
+    # should "NOT create a runner log file when passing a incorrect log file path, but it should run successfully" do
+    #   @pid = Process.fork do
+    #     Hydra::Master.new(
+    #           :files => [test_file],
+    #           :workers => [{
+    #             :type => :ssh,
+    #             :connect => 'localhost',
+    #             :directory => remote_dir_path,
+    #             :runners => 1
+    #           }],
+    #           :verbose => false,
+    #           :runner_log_file => 'invalid-dir/runner.log'
+    #         )
+    #   end
+    #   Process.waitpid @pid
+
+    #   assert_file_exists target_file # ensure the test was successfully ran
+    #   assert_file_exists runner_log_file
+    # end
+  end
+
   private
+
+  def runner_log_file
+    "hydra_runner.log"
+  end
 
   def add_infinite_worker_begin_to master_listener
     class << master_listener
