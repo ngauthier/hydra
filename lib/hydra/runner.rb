@@ -40,8 +40,10 @@ module Hydra #:nodoc:
     end
 
     def reg_trap_sighup
-      trap :SIGHUP do
-        stop
+      for sign in [:SIGHUP, :INT]
+        trap sign do
+          stop
+        end
       end
       @runner_began = true
     end
@@ -295,6 +297,8 @@ module Hydra #:nodoc:
       begin
         $stderr = $stdout =  File.open(file_name, 'a')
       rescue
+        # it should always redirect output in order to handle unexpected interruption
+        # successfully
         $stderr = $stdout =  File.open(DEFAULT_LOG_FILE, 'a')
       end
     end
