@@ -13,4 +13,4 @@ require 'hydra/listener/minimal_output'
 require 'hydra/listener/report_generator'
 require 'hydra/listener/notifier'
 require 'hydra/listener/progress_bar'
-
+require 'hydra/runner_listener/abstract'
