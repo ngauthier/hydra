@@ -322,31 +322,37 @@ class MasterTest < Test::Unit::TestCase
       assert_file_exists "#{remote_dir_path}/#{runner_log_file}"
     end
 
-    # should "NOT create a runner log file when passing a incorrect log file path, but it should run successfully" do
-    #   @pid = Process.fork do
-    #     Hydra::Master.new(
-    #           :files => [test_file],
-    #           :workers => [{
-    #             :type => :ssh,
-    #             :connect => 'localhost',
-    #             :directory => remote_dir_path,
-    #             :runners => 1
-    #           }],
-    #           :verbose => false,
-    #           :runner_log_file => 'invalid-dir/runner.log'
-    #         )
-    #   end
-    #   Process.waitpid @pid
+    should "create the default runner log file when passing an incorrect log file path" do
+      default_log_file = "#{remote_dir_path}/#{Hydra::Runner::DEFAULT_LOG_FILE}" # hydra-runner.log"
+      FileUtils.rm_f(default_log_file)
 
-    #   assert_file_exists target_file # ensure the test was successfully ran
-    #   assert_file_exists runner_log_file
-    # end
+      @pid = Process.fork do
+        Hydra::Master.new(
+              :files => [test_file],
+              :workers => [{
+                :type => :ssh,
+                :connect => 'localhost',
+                :directory => remote_dir_path,
+                :runners => 1
+              }],
+              :verbose => false,
+              :runner_log_file => 'invalid-dir/#{runner_log_file}'
+            )
+      end
+      Process.waitpid @pid
+
+      assert_file_exists target_file # ensure the test was successfully ran
+      assert_file_exists default_log_file #default log file
+      assert !File.exists?( "#{remote_dir_path}/#{runner_log_file}" )
+
+      FileUtils.rm_f(default_log_file)
+    end
   end
 
   private
 
   def runner_log_file
-    "hydra_runner.log"
+    "my-hydra-runner.log"
   end
 
   def add_infinite_worker_begin_to master_listener

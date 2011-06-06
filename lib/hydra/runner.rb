@@ -13,10 +13,13 @@ module Hydra #:nodoc:
   class Runner
     include Hydra::Messages::Runner
     traceable('RUNNER')
+
+    DEFAULT_LOG_FILE = 'hydra-runner.log'
+
     # Boot up a runner. It takes an IO object (generally a pipe from its
     # parent) to send it messages on which files to execute.
     def initialize(opts = {})
-      redirect_output( opts.fetch( :runner_log_file ) { nil } )
+      redirect_output( opts.fetch( :runner_log_file ) { DEFAULT_LOG_FILE } )
       reg_trap_sighup
 
       @io = opts.fetch(:io) { raise "No IO Object" }
@@ -38,7 +41,6 @@ module Hydra #:nodoc:
 
     def reg_trap_sighup
       trap :SIGHUP do
-        File.open("_log_output", 'a'){ |f| f << "SIGHUP trapped"}
         stop
       end
       @runner_began = true
@@ -290,8 +292,11 @@ module Hydra #:nodoc:
     end
 
     def redirect_output file_name
-      file_name = '/dev/null' unless file_name and !file_name.empty?
-      $stderr = $stdout =  File.open(file_name, 'a')
+      begin
+        $stderr = $stdout =  File.open(file_name, 'a')
+      rescue
+        $stderr = $stdout =  File.open(DEFAULT_LOG_FILE, 'a')
+      end
     end
   end
 end

@@ -19,5 +19,6 @@ rdoc
 pkg
 tags
 .rvmrc
+hydra-runner.log
 
 ## PROJECT::SPECIFIC
