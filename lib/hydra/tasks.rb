@@ -5,6 +5,9 @@ module Hydra #:nodoc:
     # Name of the task. Default 'hydra'
     attr_accessor :name
 
+    # Command line options
+    attr_accessor :options
+
     # Files to test.
     # You can add files manually via:
     #   t.files << [file1, file2, etc]
@@ -81,6 +84,7 @@ module Hydra #:nodoc:
       @serial = false
       @listeners = [Hydra::Listener::ProgressBar.new]
       @show_time = true
+      @options = ''
 
       yield self if block_given?
 
@@ -98,7 +102,8 @@ module Hydra #:nodoc:
         :autosort => @autosort,
         :files => @files,
         :listeners => @listeners,
-        :environment => @environment
+        :environment => @environment,
+        :options => @options
       }
       if @config
         @opts.merge!(:config => @config)
@@ -120,6 +125,8 @@ module Hydra #:nodoc:
 
         start = Time.now if @show_time
 
+        puts '********************'
+        puts @options.inspect
         master = Hydra::Master.new(@opts)
 
         $stdout.puts "\nFinished in #{'%.6f' % (Time.now - start)} seconds." if @show_time

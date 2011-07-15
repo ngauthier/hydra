@@ -17,7 +17,9 @@ module Hydra #:nodoc:
     # parent) to send it messages on which files to execute.
     def initialize(opts = {})
       @io = opts.fetch(:io) { raise "No IO Object" } 
-      @verbose = opts.fetch(:verbose) { false }      
+      @verbose = opts.fetch(:verbose) { false }
+      @options = opts.fetch(:options)
+
       $stdout.sync = true
       trace 'Booted. Sending Request for file'
 
@@ -152,10 +154,12 @@ module Hydra #:nodoc:
       unless @cuke_runtime
         require 'cucumber'
         require 'hydra/cucumber/formatter'
+        require 'hydra/cucumber/partial_html'
         Cucumber.logger.level = Logger::INFO
         @cuke_runtime = Cucumber::Runtime.new
         @cuke_configuration = Cucumber::Cli::Configuration.new(dev_null, dev_null)
-        @cuke_configuration.parse!(['features']+files)
+
+        @cuke_configuration.parse!(['features']+files+[@options])
 
         support_code = Cucumber::Runtime::SupportCode.new(@cuke_runtime, @cuke_configuration.guess?)
         support_code.load_files!(@cuke_configuration.support_to_load + @cuke_configuration.step_defs_to_load)
@@ -166,9 +170,12 @@ module Hydra #:nodoc:
       cuke_formatter = Cucumber::Formatter::Hydra.new(
         @cuke_runtime, hydra_response, @cuke_configuration.options
       )
+      html_formatter = Hydra::Formatter::PartialHtml.new(
+        @cuke_runtime, "/home/derek/out/features/#{file.split('/').last}#{Time.now.strftime('%H%M%S')}.html", @cuke_configuration.options
+      )
 
       cuke_runner ||= Cucumber::Ast::TreeWalker.new(
-        @cuke_runtime, [cuke_formatter], @cuke_configuration
+        @cuke_runtime, [cuke_formatter, html_formatter], @cuke_configuration
       )
       @cuke_runtime.visitor = cuke_runner
 

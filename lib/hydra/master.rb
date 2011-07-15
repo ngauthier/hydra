@@ -68,6 +68,7 @@ module Hydra #:nodoc:
       @autosort = opts.fetch('autosort') { true }
       @sync = opts.fetch('sync') { nil }
       @environment = opts.fetch('environment') { 'test' }
+      @options = opts.fetch('options')
 
       if @autosort
         sort_files_from_report
@@ -160,7 +161,7 @@ module Hydra #:nodoc:
       pipe = Hydra::Pipe.new
       child = SafeFork.fork do
         pipe.identify_as_child
-        Hydra::Worker.new(:io => pipe, :runners => runners, :verbose => @verbose)
+        Hydra::Worker.new(:io => pipe, :runners => runners, :verbose => @verbose, :options => @options)
       end
 
       pipe.identify_as_parent
