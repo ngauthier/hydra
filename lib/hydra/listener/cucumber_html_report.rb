@@ -33,7 +33,7 @@ module Hydra #:nodoc:
 
       def combine_features
         wait_for_two_seconds_while_files_are_written
-        Dir.glob(File.join(@results_path, 'features/*.html')).each do |feature|
+        Dir.glob(File.join(@results_path, 'features/*.html')).sort.each do |feature|
           File.open( feature, "rb") do |f|
             f.each_line do |line|
               @builder << line

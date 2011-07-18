@@ -80,13 +80,10 @@ module Hydra #:nodoc:
 
     def boot_runners(num_runners) #:nodoc:
       trace "Booting #{num_runners} Runners"
-        ports = [7055, 7056]
       num_runners.times do
-        port = ports.shift
         pipe = Hydra::Pipe.new
 
         child = SafeFork.fork do
-          ENV['port'] = port.to_s
           pipe.identify_as_child
           Hydra::Runner.new(:io => pipe, :verbose => @verbose, :options => @options)
         end

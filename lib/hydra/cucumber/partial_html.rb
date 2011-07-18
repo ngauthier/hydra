@@ -3,6 +3,7 @@ require 'cucumber/formatter/html'
 module Hydra
   module Formatter
     class PartialHtml < Cucumber::Formatter::Html
+
       def before_features(features)
         # we do not want the default implementation as we will write our own header
       end
