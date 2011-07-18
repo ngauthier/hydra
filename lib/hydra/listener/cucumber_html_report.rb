@@ -3,64 +3,39 @@ module Hydra #:nodoc:
   module Listener #:nodoc:
     # Output a textual report at the end of testing
     class CucumberHtmlReport < Hydra::Listener::Abstract
-       ## Initialize a new report
-      #def testing_begin(files)
-      #  @report = { }
-      #end
-      #
-      ## Log the start time of a file
-      #def file_begin(file)
-      #  @report[file] ||= { }
-      #  @report[file]['start'] = Time.now.to_f
-      #end
-      #
-      ## Log the end time of a file and compute the file's testing
-      ## duration
-      #def file_end(file, output)
-      #  @report[file]['end'] = Time.now.to_f
-      #  @report[file]['duration'] = @report[file]['end'] - @report[file]['start']
-      #end
 
-      # output the report
       def testing_end
         CombineHtml.new.generate
-
-
-        #@output.close
       end
     end
 
     class CombineHtml
       def initialize
-        @io = File.open('/home/derek/out/report.html', "w")
+        @results_path = File.join(Dir.pwd, 'results')
+        @io = File.open(File.join(@results_path, 'report.html'), "w")
         @builder = create_builder(@io)
       end
 
       def generate
-        puts "write header"
         before_features
-
-        puts "combine"
-
         combine_features
-
-        puts "write footer"
-
-
         after_features
         @io.flush
         @io.close
 
-        puts "finished"
+
+        FileUtils.rm_r File.join(@results_path, 'features')
+      end
+
+      def wait_for_two_seconds_while_files_are_written
+        sleep 2
       end
 
       def combine_features
-        sleep 10
-        Dir.glob('/home/derek/out/features/*.html').each do |feature|
-          puts "Reading #{feature}"
+        wait_for_two_seconds_while_files_are_written
+        Dir.glob(File.join(@results_path, 'features/*.html')).each do |feature|
           File.open( feature, "rb") do |f|
             f.each_line do |line|
-              puts line
               @builder << line
             end
           end
@@ -68,7 +43,6 @@ module Hydra #:nodoc:
       end
 
       def before_features
-
         # <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
         @builder.declare!(
           :DOCTYPE,
@@ -104,7 +78,6 @@ module Hydra #:nodoc:
       end
 
       def after_features
-        print_stats
         @builder << '</div>'
         @builder << '</body>'
         @builder << '</html>'
@@ -165,55 +138,6 @@ module Hydra #:nodoc:
         EOF
       end
 
-      def move_progress
-      end
-
-      def percent_done
-        result = 100.0
-        result
-      end
-
-      def format_exception(exception)
-        (["#{exception.message}"] + exception.backtrace).join("\n")
-      end
-
-      def backtrace_line(line)
-        line.gsub(/\A([^:]*\.(?:rb|feature|haml)):(\d*).*\z/) do
-          if ENV['TM_PROJECT_DIRECTORY']
-            "<a href=\"txmt://open?url=file://#{File.expand_path($1)}&line=#{$2}\">#{$1}:#{$2}</a> "
-          else
-            line
-          end
-        end
-      end
-
-      def print_stats
-        #@builder <<  "<script type=\"text/javascript\">document.getElementById('duration').innerHTML = \"Finished in <strong>#{format_duration(features.duration)} seconds</strong>\";</script>"
-        #@builder <<  "<script type=\"text/javascript\">document.getElementById('totals').innerHTML = \"#{print_stat_string(features)}\";</script>"
-      end
-
-      def print_stat_string(features)
-        string = String.new
-        string << dump_count(@step_mother.scenarios.length, "scenario")
-        scenario_count = print_status_counts{|status| @step_mother.scenarios(status)}
-        string << scenario_count if scenario_count
-        string << "<br />"
-        string << dump_count(@step_mother.steps.length, "step")
-        step_count = print_status_counts{|status| @step_mother.steps(status)}
-        string << step_count if step_count
-      end
-
-      def print_status_counts
-        counts = [:failed, :skipped, :undefined, :pending, :passed].map do |status|
-          elements = yield status
-          elements.any? ? "#{elements.length} #{status.to_s}" : nil
-        end.compact
-        return " (#{counts.join(', ')})" if counts.any?
-      end
-
-      def dump_count(count, what, state=nil)
-        [count, state, "#{what}#{count == 1 ? '' : 's'}"].compact.join(" ")
-      end
 
       def create_builder(io)
         Cucumber::Formatter::OrderedXmlMarkup.new(:target => io, :indent => 0)

@@ -170,8 +170,10 @@ module Hydra #:nodoc:
       cuke_formatter = Cucumber::Formatter::Hydra.new(
         @cuke_runtime, hydra_response, @cuke_configuration.options
       )
+      results_directory = "#{Dir.pwd}/results/features"
+      FileUtils.mkdir_p results_directory
       html_formatter = Hydra::Formatter::PartialHtml.new(
-        @cuke_runtime, "/home/derek/out/features/#{file.split('/').last}#{Time.now.strftime('%H%M%S')}.html", @cuke_configuration.options
+        @cuke_runtime, "#{results_directory}/#{file.split('/').last}#{Time.now.strftime('%H%M%S')}.html", @cuke_configuration.options
       )
 
       cuke_runner ||= Cucumber::Ast::TreeWalker.new(
