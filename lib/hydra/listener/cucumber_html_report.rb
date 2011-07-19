@@ -10,9 +10,10 @@ module Hydra #:nodoc:
     end
 
     class CombineHtml
-      def initialize
+      def initialize(output_file = nil)
         @results_path = File.join(Dir.pwd, 'results')
-        @io = File.open(File.join(@results_path, 'report.html'), "w")
+        output_file = File.join(@results_path, 'html/index.html') if output_file.nil?
+        @io = File.open(output_file, "w")
         @builder = create_builder(@io)
       end
 
