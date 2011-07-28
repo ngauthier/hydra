@@ -147,7 +147,6 @@ module Hydra #:nodoc:
     # run all the scenarios in a cucumber feature file
     def run_cucumber_file(file)
       hydra_response = StringIO.new
-      hydra_response.puts file
 
       options = @options if @options.is_a?(Array)
       options = @options.split(' ') if @options.is_a?(String)
@@ -168,8 +167,7 @@ module Hydra #:nodoc:
 
         Cucumber.logger.level = Logger::INFO
 
-        cuke = Cucumber::Cli::Main.new(args, hydra_response, hydra_response)
-        #cuke.configuration.formats.clear
+        cuke = Cucumber::Cli::Main.new(args, dev_null, dev_null)
         cuke.configuration.formats << ['Cucumber::Formatter::Hydra', hydra_response]
 
         html_output = cuke.configuration.formats.select{|format| format[0] == 'html'}
@@ -180,12 +178,15 @@ module Hydra #:nodoc:
 
         cuke_runtime = Cucumber::Runtime.new(cuke.configuration)
         cuke_runtime.run!
+        exit 1 if cuke_runtime.results.failure?
 
-        hydra_response.rewind
       end
       Process.wait fork_id
 
-      return hydra_response.read
+      hydra_response.puts "." if not $?.exitstatus == 0
+      hydra_response.rewind
+
+      hydra_response.read
     end
 
     def run_javascript_file(file)
