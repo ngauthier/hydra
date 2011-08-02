@@ -18,6 +18,7 @@ module Hydra #:nodoc:
       def file_end(file, output)
         @report[file]['end'] = Time.now.to_f
         @report[file]['duration'] = @report[file]['end'] - @report[file]['start']
+        @report[file]['all_tests_passed_last_run'] = (output == '.')
       end
 
       # output the report
