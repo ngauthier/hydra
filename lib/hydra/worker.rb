@@ -19,6 +19,7 @@ module Hydra #:nodoc:
       @io = opts.fetch(:io) { raise "No IO Object" }
       @runners = []
       @listeners = []
+      @options = opts.fetch(:options)
 
       load_worker_initializer
 
@@ -90,9 +91,10 @@ module Hydra #:nodoc:
       trace "Booting #{num_runners} Runners"
       num_runners.times do
         pipe = Hydra::Pipe.new
+
         child = SafeFork.fork do
           pipe.identify_as_child
-          Hydra::Runner.new(:io => pipe, :verbose => @verbose, :runner_listeners => @runner_event_listeners, :runner_log_file => @runner_log_file )
+          Hydra::Runner.new(:io => pipe, :verbose => @verbose, :runner_listeners => @runner_event_listeners, :runner_log_file => @runner_log_file, :options => @options)
         end
         pipe.identify_as_parent
         @runners << { :pid => child, :io => pipe, :idle => false }

@@ -25,6 +25,7 @@ module Hydra #:nodoc:
       @io = opts.fetch(:io) { raise "No IO Object" }
       @verbose = opts.fetch(:verbose) { false }
       @event_listeners = Array( opts.fetch( :runner_listeners ) { nil } )
+      @options = opts.fetch(:options)
 
       $stdout.sync = true
       runner_begin
@@ -173,47 +174,46 @@ module Hydra #:nodoc:
 
     # run all the scenarios in a cucumber feature file
     def run_cucumber_file(file)
-
-      files = [file]
-      dev_null = StringIO.new
       hydra_response = StringIO.new
 
-      unless @cuke_runtime
-        require 'cucumber'
+      options = @options if @options.is_a?(Array)
+      options = @options.split(' ') if @options.is_a?(String)
+
+      fork_id = fork do
+        files = [file]
+        dev_null = StringIO.new
+
+        args = [file, options].flatten.compact
+        hydra_response.puts args.inspect
+
+        results_directory = "#{Dir.pwd}/results/features"
+        FileUtils.mkdir_p results_directory
+
+        require 'cucumber/cli/main'
         require 'hydra/cucumber/formatter'
+        require 'hydra/cucumber/partial_html'
+
         Cucumber.logger.level = Logger::INFO
-        @cuke_runtime = Cucumber::Runtime.new
-        @cuke_configuration = Cucumber::Cli::Configuration.new(dev_null, dev_null)
-        @cuke_configuration.parse!(ENV['CUCUMBER_OPTS'].split(' ') + ['features'] + files)
 
-        support_code = Cucumber::Runtime::SupportCode.new(@cuke_runtime, @cuke_configuration.guess?)
-        support_code.load_files!(@cuke_configuration.support_to_load + @cuke_configuration.step_defs_to_load)
-        support_code.fire_hook(:after_configuration, @cuke_configuration)
-        # i don't like this, but there no access to set the instance of SupportCode in Runtime
-        @cuke_runtime.instance_variable_set('@support_code',support_code)
+        cuke = Cucumber::Cli::Main.new(args, dev_null, dev_null)
+        cuke.configuration.formats << ['Cucumber::Formatter::Hydra', hydra_response]
+
+        html_output = cuke.configuration.formats.select{|format| format[0] == 'html'}
+        if html_output
+          cuke.configuration.formats.delete(html_output)
+          cuke.configuration.formats << ['Hydra::Formatter::PartialHtml', "#{results_directory}/#{file.split('/').last}.html"]
+        end
+
+        cuke_runtime = Cucumber::Runtime.new(cuke.configuration)
+        cuke_runtime.run!
+        exit 1 if cuke_runtime.results.failure?
       end
-      cuke_formatter = Cucumber::Formatter::Hydra.new(
-        @cuke_runtime, hydra_response, @cuke_configuration.options
-      )
+      Process.wait fork_id
 
-      cuke_runner ||= Cucumber::Ast::TreeWalker.new(
-        @cuke_runtime, [cuke_formatter], @cuke_configuration
-      )
-      @cuke_runtime.visitor = cuke_runner
-
-      loader = Cucumber::Runtime::FeaturesLoader.new(
-        files,
-        @cuke_configuration.filters,
-        @cuke_configuration.tag_expression
-      )
-      features = loader.features
-      tag_excess = tag_excess(features, @cuke_configuration.options[:tag_expression].limits)
-      @cuke_configuration.options[:tag_excess] = tag_excess
-
-      cuke_runner.visit_features(features)
-
+      hydra_response.puts "." if not $?.exitstatus == 0
       hydra_response.rewind
-      return hydra_response.read
+
+      hydra_response.read
     end
 
     def run_javascript_file(file)
@@ -304,3 +304,4 @@ module Hydra #:nodoc:
     end
   end
 end
+
