@@ -2,6 +2,8 @@ require 'open3'
 module Hydra #:nodoc:
   # Hydra Task Common attributes and methods
   class Task
+    include Rake::DSL if defined?(Rake::DSL)
+
     # Name of the task. Default 'hydra'
     attr_accessor :name
 
