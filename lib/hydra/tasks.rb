@@ -2,8 +2,13 @@ require 'open3'
 module Hydra #:nodoc:
   # Hydra Task Common attributes and methods
   class Task
+    include Rake::DSL if defined?(Rake::DSL)
+
     # Name of the task. Default 'hydra'
     attr_accessor :name
+
+    # Command line options
+    attr_accessor :options
 
     # Files to test.
     # You can add files manually via:
@@ -85,6 +90,7 @@ module Hydra #:nodoc:
       @serial = false
       @listeners = [Hydra::Listener::ProgressBar.new]
       @show_time = true
+      @options = ''
 
       yield self if block_given?
 
@@ -103,7 +109,8 @@ module Hydra #:nodoc:
         :files => @files,
         :listeners => @listeners,
         :environment => @environment,
-        :runner_log_file => @runner_log_file
+        :runner_log_file => @runner_log_file,
+        :options => @options
       }
       if @config
         @opts.merge!(:config => @config)
@@ -125,6 +132,8 @@ module Hydra #:nodoc:
 
         start = Time.now if @show_time
 
+        puts '********************'
+        puts @options.inspect
         master = Hydra::Master.new(@opts)
 
         $stdout.puts "\nFinished in #{'%.6f' % (Time.now - start)} seconds." if @show_time
