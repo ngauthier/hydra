@@ -19,7 +19,7 @@ module Hydra #:nodoc:
       @io = opts.fetch(:io) { raise "No IO Object" }
       @runners = []
       @listeners = []
-      @options = opts.fetch(:options)
+      @options = opts.fetch(:options) { "" }
 
       load_worker_initializer
 

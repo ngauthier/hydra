@@ -25,7 +25,7 @@ module Hydra #:nodoc:
       @io = opts.fetch(:io) { raise "No IO Object" }
       @verbose = opts.fetch(:verbose) { false }
       @event_listeners = Array( opts.fetch( :runner_listeners ) { nil } )
-      @options = opts.fetch(:options)
+      @options = opts.fetch(:options) { "" }
 
       $stdout.sync = true
       runner_begin
