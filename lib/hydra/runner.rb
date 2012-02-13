@@ -26,7 +26,7 @@ module Hydra #:nodoc:
       @verbose = opts.fetch(:verbose) { false }
       @event_listeners = Array( opts.fetch( :runner_listeners ) { nil } )
       @options = opts.fetch(:options) { "" }
-      @directory =  RUBY_VERSION < "1.9" ? "" : Dir.pwd + "/"
+      @directory = get_directory
 
       $stdout.sync = true
       runner_begin
@@ -302,6 +302,10 @@ module Hydra #:nodoc:
         # successfully
         $stderr = $stdout =  File.open(DEFAULT_LOG_FILE, 'a')
       end
+    end
+
+    def get_directory
+      RUBY_VERSION < "1.9" ? "" : Dir.pwd + "/"
     end
   end
 end
