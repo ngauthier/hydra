@@ -25,7 +25,8 @@ module Hydra #:nodoc:
       @io = opts.fetch(:io) { raise "No IO Object" }
       @verbose = opts.fetch(:verbose) { false }
       @event_listeners = Array( opts.fetch( :runner_listeners ) { nil } )
-      @options = opts.fetch(:options)
+      @options = opts.fetch(:options) { "" }
+      @directory = get_directory
 
       $stdout.sync = true
       runner_begin
@@ -120,7 +121,7 @@ module Hydra #:nodoc:
     # Run all the Test::Unit Suites in a ruby file
     def run_test_unit_file(file)
       begin
-        require file
+        require @directory + file
       rescue LoadError => ex
         trace "#{file} does not exist [#{ex.to_s}]"
         return ex.to_s
@@ -301,6 +302,10 @@ module Hydra #:nodoc:
         # successfully
         $stderr = $stdout =  File.open(DEFAULT_LOG_FILE, 'a')
       end
+    end
+
+    def get_directory
+      RUBY_VERSION < "1.9" ? "" : Dir.pwd + "/"
     end
   end
 end
