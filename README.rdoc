@@ -4,7 +4,7 @@ Spread your tests over processors and/or multiple machines to test your code fas
 
 Ruby 1.8 and 1.9*
 
-* Install gem 'test-unit' if using Ruby 1.9
+\* Install gem 'test-unit' if using Ruby 1.9
 
 == Description
 
