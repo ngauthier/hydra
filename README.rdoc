@@ -1,3 +1,9 @@
+= !Unmaintained!
+
+Hydra is no longer actively maintained. It works for the versions of rspec and cucumber that it originally targeted, as well as test unit. However, I (@ngauthier) no longer use Hydra and so it has not been kept up.
+
+I recommend https://github.com/grosser/parallel_tests as a replacement.
+
 = Hydra
 
 Spread your tests over processors and/or multiple machines to test your code faster.  
