@@ -1,6 +1,8 @@
-= !Unmaintained!
+= !Unmaintained! and Renamed!
 
 Hydra is no longer actively maintained. It works for the versions of rspec and cucumber that it originally targeted, as well as test unit. However, I (@ngauthier) no longer use Hydra and so it has not been kept up.
+
+The Hydra gem has also been renamed to `ngauthier-hydra` to allow the Hydra Project to use the `hydra` gem.
 
 I recommend https://github.com/grosser/parallel_tests as a replacement.
 
