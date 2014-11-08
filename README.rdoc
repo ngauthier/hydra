@@ -4,7 +4,7 @@ Hydra is no longer actively maintained. It works for the versions of rspec and c
 
 The Hydra gem has also been renamed to `ngauthier-hydra` to allow the Hydra Project to use the `hydra` gem.
 
-I recommend https://github.com/grosser/parallel_tests as a replacement.
+I recommend parallel_tests[https://github.com/grosser/parallel_tests] as a local parallelization replacement, and Gorgon[https://github.com/nulogy/Gorgon] as a distributed testing replacement.
 
 = Hydra
 
